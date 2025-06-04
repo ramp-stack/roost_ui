@@ -105,7 +105,7 @@ pub(crate) trait Scaling {
     fn scale_text(text: Text, scale: &Scale) -> Text {
         Text::new(
             text.spans.into_iter().map(|s|
-                Span::new(&s.text, scale.physical(s.font_size), scale.physical(s.line_height), s.font, s.color)
+                Span::new(s.text, scale.physical(s.font_size), scale.physical(s.line_height), s.font, s.color)
             ).collect(),
             text.width.map(|w| scale.physical(w)),
             text.align,

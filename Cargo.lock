@@ -63,9 +63,9 @@ dependencies = [
 
 [[package]]
 name = "air"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d75bb88271334af887419f743449198cef735aa40c567f86682d45fe6351ef8c"
+checksum = "ac8489eabee0f094b6222bd04d55ea017fce7515858b2aff3a635332e85446f7"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1192,6 +1192,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "glob"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8d1add55171497b4705a648c6b583acafb01d58050a51727785f0b2c8e0a2b2"
+
+[[package]]
 name = "glow"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1554,6 +1560,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0263a3d970d5c054ed9312c0057b4f3bde9c0b33836d3637361d4a9e6e7a408"
 
 [[package]]
+name = "include_dir"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "923d117408f1e49d914f1a379a309cffe4f18c05cf4e3d12e613a15fc81bd0dd"
+dependencies = [
+ "glob",
+ "include_dir_macros",
+]
+
+[[package]]
+name = "include_dir_macros"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cab85a7ed0bd5f0e76d93846e0147172bed2e2d3f859bcc33a8d9699cad1a75"
+dependencies = [
+ "proc-macro2 1.0.95",
+ "quote 1.0.40",
+]
+
+[[package]]
 name = "indexmap"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1847,8 +1873,6 @@ dependencies = [
 [[package]]
 name = "maverick_os"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23d797dd2c19f9770a9dc7c7da16814f4364970d5ba0f447dd47fd67918bbbcf"
 dependencies = [
  "air",
  "async-trait",
@@ -2486,6 +2510,7 @@ version = "0.1.0"
 dependencies = [
  "downcast-rs 2.0.1",
  "image 0.25.6",
+ "include_dir",
  "maverick_os",
  "nsvg",
  "pelican_ui_proc",

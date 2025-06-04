@@ -133,9 +133,10 @@ impl EventHandler {
             },                
             Input::CursorMoved{position, ..} => {
                 let position = (scale.logical(position.0 as f32), scale.logical(position.1 as f32));
-                (self.mouse != position).then_some(
+                (self.mouse != position).then_some({
+                    self.mouse = position;
                     Box::new(MouseEvent{position: Some(position), state: MouseState::Moved})
-                )
+                })
             },
             Input::Mouse{state, ..} => {
                 Some(Box::new(MouseEvent{position: Some(self.mouse), state: match state {

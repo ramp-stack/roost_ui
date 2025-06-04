@@ -1,18 +1,23 @@
 use std::collections::BTreeMap;
-use std::sync::Arc;
+use std::sync::{MutexGuard, Mutex, Arc};
 use std::any::TypeId;
 
 use wgpu_canvas::{ImageAtlas, FontAtlas};
 
 use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
-use maverick_os::hardware::Context as HardwareContext;
+pub use maverick_os::hardware::Context as HardwareContext;
+use maverick_os::runtime::Context as RuntimeContext;
 
+pub use maverick_os::hardware::*;
 pub use maverick_os::runtime::{BackgroundTask, Services, ServiceList, Service};
-pub use maverick_os::{MaverickOS, start as maverick_start};
+pub use maverick_os::{MaverickOS, start as maverick_start, State};
+
+pub use include_dir::include_dir as include_assets;
 
 pub use pelican_ui_proc::Component;
 
 use downcast_rs::{Downcast, impl_downcast};
+use include_dir::{Dir, DirEntry};
 
 mod wgpu;
 use wgpu::Canvas;
@@ -30,7 +35,10 @@ pub mod resources {
     pub use wgpu_canvas::{Image, Font};
 }
 
-pub type Plugins = BTreeMap<TypeId, Box<dyn Plugin>>;
+pub mod theme;
+pub use theme::{Theme, ColorResources, FontResources, IconResources, BrandResources};
+
+type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
 
 pub trait Plugin: Downcast {
     fn new(ctx: &mut Context) -> Self where Self: Sized;
@@ -39,25 +47,25 @@ pub trait Plugin: Downcast {
 }
 impl_downcast!(Plugin); 
 
-pub struct Context {
-    pub hardware: HardwareContext,
-    plugins: Plugins,
-  //assets: Assets,
-    events: Events,
+pub struct Assets {
+    dirs: Vec<Dir<'static>>,
     image: ImageAtlas,
     font: FontAtlas,
 }
 
-impl Context {
-    pub fn new(hardware: HardwareContext) -> Self {
-        Context {
-            hardware,
-            plugins: Plugins::new(),
-          //assets: Assets::new(),
-            events: Events::new(),
+impl Default for Assets {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Assets {
+    pub fn new() -> Self {
+        Assets {
+            dirs: Vec::new(),
             image: ImageAtlas::default(),            
-            font: FontAtlas::default(),            
-        }
+            font: FontAtlas::default(), 
+        } 
     }
 
     pub fn add_font(&mut self, font: &[u8]) -> resources::Font {self.font.add(font)}
@@ -70,9 +78,63 @@ impl Context {
         self.image.add(image::RgbaImage::from_raw(size.0, size.1, rgba.into_raw()).unwrap())
     }
 
-  //pub fn trigger_event(&mut self, event: impl Event) {
-  //    self.events.push_back(Box::new(event));
-  //}
+    pub fn load_font(&mut self, file: &str) -> Option<resources::Font> {
+        self.load_file(file).map(|b| self.add_font(&b))
+    }
+
+    pub fn load_image(&mut self, file: &str) -> Option<resources::Image> {
+        self.load_file(file).map(|b|
+            self.add_image(image::load_from_memory(&b).unwrap().into())
+        )
+    }
+
+    pub fn load_file(&self, file: &str) -> Option<Vec<u8>> {
+        self.dirs.iter().find_map(|dir|
+            dir.find(file).ok().and_then(|mut f|
+                f.next().and_then(|f|
+                    if let DirEntry::File(f) = f {
+                        Some(f.contents().to_vec())
+                    } else {
+                        None
+                    }
+                )
+            )
+        )
+    }
+
+    pub fn include_assets(&mut self, dir: Dir<'static>) {
+        self.dirs.push(dir);
+    }
+}
+
+pub struct Context {
+    pub hardware: HardwareContext,
+    pub runtime: RuntimeContext,
+    pub assets: Assets,
+    pub theme: Theme,
+    plugins: PluginList,
+    events: Events,
+    state: Arc<Mutex<State>>
+}
+
+impl Context {
+    pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Arc<Mutex<State>>) -> Self {
+        let mut assets = Assets::new();
+        assets.include_assets(include_assets!("./resources"));
+        Context {
+            hardware,
+            runtime,
+            theme: Theme::default(&mut assets),
+            assets,  
+            plugins: PluginList::new(),
+            events: Events::new(),    
+            state
+        }
+    }
+
+    pub fn trigger_event(&mut self, event: impl Event) {
+        self.events.push_back(Box::new(event));
+    }
 
     pub fn get<P: Plugin + 'static>(&mut self) -> &mut P {
         self.plugins.get_mut(&TypeId::of::<P>())
@@ -80,13 +142,14 @@ impl Context {
             .downcast_mut().unwrap()
     }
 
+    pub fn state<'a>(&'a mut self) -> MutexGuard<'a, State> {
+        self.state.lock().unwrap()
+    }
+
   //pub fn state(&mut self) -> &mut State {
   //    self.base_context.state()
   //}
 
-  //pub fn include_assets(&mut self, dir: Dir<'static>) {
-  //    self.assets.push(dir);
-  //}
 
   //pub fn add_font(&mut self, font: &[u8]) -> canvas::Font {
   //    self.base_context.as_mut().add_font(font)
@@ -100,38 +163,21 @@ impl Context {
   //    self.base_context.as_mut().add_svg(svg, quality)
   //}
 
-  //pub fn load_font(&mut self, file: &str) -> Option<canvas::Font> {
-  //    self.load_file(file).map(|b| self.add_font(&b))
-  //}
 
-  //pub fn load_image(&mut self, file: &str) -> Option<canvas::Image> {
-  //    self.load_file(file).map(|b|
-  //        self.add_image(image::load_from_memory(&b).unwrap().into())
-  //    )
-  //}
 
-  //pub fn load_file(&self, file: &str) -> Option<Vec<u8>> {
-  //    self.assets.iter().find_map(|dir|
-  //        dir.find(file).ok().and_then(|mut f|
-  //            f.next().and_then(|f|
-  //                if let DirEntry::File(f) = f {
-  //                    Some(f.contents().to_vec())
-  //                } else {
-  //                    None
-  //                }
-  //            )
-  //        )
-  //    )
-  //}
-
-  //pub fn as_canvas(&mut self) -> &mut CanvasContext {
-  //    self.as_mut()
-  //}
+    // pub fn as_canvas(&mut self) -> &mut FontAtlas {
+    //     self.as_mut()
+    // }
 }
-impl AsMut<FontAtlas> for Context {fn as_mut(&mut self) -> &mut FontAtlas {&mut self.font}}
-impl AsMut<ImageAtlas> for Context {fn as_mut(&mut self) -> &mut ImageAtlas {&mut self.image}}
 
-pub trait Application: Services {
+pub trait Plugins {
+    fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>>;
+}
+
+impl AsMut<FontAtlas> for Context {fn as_mut(&mut self) -> &mut FontAtlas {&mut self.assets.font}}
+impl AsMut<ImageAtlas> for Context {fn as_mut(&mut self) -> &mut ImageAtlas {&mut self.assets.image}}
+
+pub trait Application: Services + Plugins {
     fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
 }
 
@@ -154,7 +200,9 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
         let (canvas, size) = Canvas::new(context.window.handle.clone(), size.0, size.1).await;
         let scale = Scale(context.window.scale_factor);
         let screen = (scale.logical(size.0 as f32), scale.logical(size.1 as f32));
-        let mut context = Context::new(context.hardware.clone());
+        let mut context = Context::new(context.hardware.clone(), context.runtime.clone(), context.state.clone());
+        let plugins = A::plugins(&mut context);
+        context.plugins = plugins.into_iter().map(|p| ((*p).type_id(), p)).collect();
         let mut application = A::new(&mut context).await;
         let size_request = _Drawable::request_size(&*application, &mut context);
         let sized_app = application.build(&mut context, screen, size_request);
@@ -212,7 +260,7 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                     let items = self.application.draw(
                         self.sized_app.clone(), (0.0, 0.0), (0.0, 0.0, self.screen.0, self.screen.1),
                     ).into_iter().map(|(a, i)| (a.scale(&self.scale), i.scale(&self.scale))).collect();
-                    self.canvas.draw(&mut self.context.image, &mut self.context.font, items);
+                    self.canvas.draw(&mut self.context.assets.image, &mut self.context.assets.font, items);
                 },
                 Lifetime::MemoryWarning => {},
             },
