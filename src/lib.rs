@@ -10,7 +10,7 @@ use maverick_os::hardware::Context as HardwareContext;
 pub use maverick_os::runtime::{BackgroundTask, Services, ServiceList, Service};
 pub use maverick_os::{MaverickOS, start as maverick_start};
 
-pub use pelican_engine_proc::Component;
+pub use pelican_ui_proc::Component;
 
 use downcast_rs::{Downcast, impl_downcast};
 

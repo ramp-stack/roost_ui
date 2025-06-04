@@ -63,7 +63,9 @@ dependencies = [
 
 [[package]]
 name = "air"
-version = "1.0.0"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d75bb88271334af887419f743449198cef735aa40c567f86682d45fe6351ef8c"
 dependencies = [
  "async-trait",
  "chrono",
@@ -872,7 +874,9 @@ checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
 
 [[package]]
 name = "easy_secp256k1"
-version = "1.0.0"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eee1fe43e5fa4ea0886f250fc77c1afa32807750b735b7f2323c8c184541eda7"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes 0.16.0",
@@ -1843,6 +1847,8 @@ dependencies = [
 [[package]]
 name = "maverick_os"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23d797dd2c19f9770a9dc7c7da16814f4364970d5ba0f447dd47fd67918bbbcf"
 dependencies = [
  "air",
  "async-trait",
@@ -2475,21 +2481,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "pelican_engine"
+name = "pelican_ui"
 version = "0.1.0"
 dependencies = [
  "downcast-rs 2.0.1",
  "image 0.25.6",
  "maverick_os",
  "nsvg",
- "pelican_engine_proc",
+ "pelican_ui_proc",
  "wgpu",
  "wgpu_canvas",
 ]
 
 [[package]]
-name = "pelican_engine_proc"
-version = "1.0.0"
+name = "pelican_ui_proc"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "144bbf9eba1c9d31c2d491e3a2e1a0dbe33f52b189ecd19ccd857ca8486e4cb3"
 dependencies = [
  "proc-macro2 1.0.95",
  "quote 1.0.40",
@@ -2963,6 +2971,8 @@ dependencies = [
 [[package]]
 name = "rusqlite_kv"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9fdd4efe0795a1c1b4cf594a7cce2c8103846c167f9577c3ee8b2c7caf8b995"
 dependencies = [
  "hex",
  "rusqlite",
