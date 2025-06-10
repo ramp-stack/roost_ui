@@ -9,7 +9,7 @@ pub use maverick_os::hardware::Context as HardwareContext;
 use maverick_os::runtime::Context as RuntimeContext;
 
 pub use maverick_os::hardware::*;
-pub use maverick_os::runtime::{BackgroundTask, Services, ServiceList, Service};
+//pub use maverick_os::runtime::{BackgroundTask, Services, ServiceList, Service};
 pub use maverick_os::{MaverickOS, start as maverick_start, State};
 
 pub use include_dir::include_dir as include_assets;
@@ -177,7 +177,7 @@ pub trait Plugins {
 impl AsMut<FontAtlas> for Context {fn as_mut(&mut self) -> &mut FontAtlas {&mut self.assets.font}}
 impl AsMut<ImageAtlas> for Context {fn as_mut(&mut self) -> &mut ImageAtlas {&mut self.assets.image}}
 
-pub trait Application: Services + Plugins {
+pub trait Application:  Plugins {
     fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
 }
 
@@ -191,9 +191,9 @@ pub struct PelicanEngine<A: Application> {
     application: Box<dyn Drawable>,
     event_handler: EventHandler
 }
-impl<A: Application> Services for PelicanEngine<A> {
-    fn services() -> ServiceList {A::services()}
-}
+//  impl<A: Application> Services for PelicanEngine<A> {
+//      fn services() -> ServiceList {A::services()}
+//  }
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
     async fn new(context: &mut maverick_os::Context) -> Self {
         let size = context.window.size;
