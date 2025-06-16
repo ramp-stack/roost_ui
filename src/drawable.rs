@@ -1,5 +1,5 @@
 use wgpu_canvas::Area as CanvasArea;
-use wgpu_canvas::CanvasItem;
+use wgpu_canvas::Item as CanvasItem;
 
 use std::fmt::Debug;
 use std::any::Any;
@@ -8,7 +8,7 @@ use super::{Context, resources};
 use super::events::*;
 use super::layout::{SizeRequest, Area};
 
-pub use wgpu_canvas::{Text, Font, Span, Align, Cursor, CursorAction, Color};
+pub use wgpu_canvas::{Text, Font, Span, Align, Cursor, Color};
 pub use wgpu_canvas::Shape as ShapeType;
 
 #[derive(Default, Debug, Clone)]
@@ -51,15 +51,12 @@ pub(crate) trait _Drawable: Debug {
 
 impl _Drawable for Text {
     fn request_size(&self, ctx: &mut Context) -> RequestBranch {
-        let size = self.size(ctx);
-        RequestBranch(SizeRequest::fixed(size), vec![])
+        RequestBranch(SizeRequest::fixed(self.size(ctx)), vec![])
     }
 
     fn draw(&mut self, _sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
         vec![(CanvasArea(offset, Some(bound)), CanvasItem::Text(self.clone()))]
     }
-
-    fn event(&mut self, _ctx: &mut Context, _sized: SizedBranch, _event: Box<dyn Event>) {}
 }
 
 
@@ -69,7 +66,9 @@ pub struct Shape {
     pub color: Color
 }
 impl _Drawable for Shape {
-    fn request_size(&self, _ctx: &mut Context) -> RequestBranch {RequestBranch(SizeRequest::fixed(self.shape.size()), vec![])}
+    fn request_size(&self, _ctx: &mut Context) -> RequestBranch {
+        RequestBranch(SizeRequest::fixed(self.shape.size()), vec![])
+    }
 
     fn draw(&mut self, _sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
         //TODO: use sized.0 as the size of the shape?
@@ -85,7 +84,9 @@ pub struct Image {
 }
 
 impl _Drawable for Image {
-    fn request_size(&self, _ctx: &mut Context) -> RequestBranch {RequestBranch(SizeRequest::fixed(self.shape.size()), vec![])}
+    fn request_size(&self, _ctx: &mut Context) -> RequestBranch {
+        RequestBranch(SizeRequest::fixed(self.shape.size()), vec![])
+    }
 
     fn draw(&mut self, _sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
         vec![(CanvasArea(offset, Some(bound)), CanvasItem::Image(self.shape, self.image.clone(), self.color))]
@@ -104,7 +105,8 @@ impl<C: Component + ?Sized + 'static + OnEvent> _Drawable for C {
     fn request_size(&self, ctx: &mut Context) -> RequestBranch {
         let requests = self.children().into_iter().map(|i| _Drawable::request_size(i, ctx)).collect::<Vec<_>>();
         let info = requests.iter().map(|i| i.0).collect::<Vec<_>>();
-        RequestBranch(Component::request_size(self, ctx, info), requests)
+        let r = Component::request_size(self, ctx, info);
+        RequestBranch(r, requests)
     }
 
     fn build(&mut self, ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {

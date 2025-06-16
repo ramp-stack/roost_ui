@@ -2,7 +2,7 @@ use wgpu::{RenderPassDepthStencilAttachment, RenderPassColorAttachment, CommandE
 
 use std::sync::Arc;
 
-use wgpu_canvas::{CanvasRenderer, ImageAtlas, FontAtlas, Area, CanvasItem};
+use wgpu_canvas::{Renderer, Atlas, Area, Item};
 
 const SAMPLE_COUNT: u32 = 4;
 
@@ -14,7 +14,7 @@ pub struct Canvas {
     config: SurfaceConfiguration,
     msaa_view: Option<TextureView>,
     depth_view: TextureView,
-    canvas_renderer: CanvasRenderer,
+    renderer: Renderer,
 }
 
 impl Canvas {
@@ -80,7 +80,7 @@ impl Canvas {
 
         let depth_view = Self::create_depth_view(&device, &config);
 
-        let canvas_renderer = CanvasRenderer::new(&queue, &device, &surface_caps.formats[0], multisample, Some(depth_stencil));
+        let renderer = Renderer::new(&device, &surface_caps.formats[0], multisample, Some(depth_stencil));
 
         let size = (config.width, config.height);
 
@@ -92,7 +92,7 @@ impl Canvas {
             config,
             msaa_view,
             depth_view,
-            canvas_renderer,
+            renderer,
         }, size)
     }
 
@@ -116,13 +116,13 @@ impl Canvas {
         (self.config.width, self.config.height)
     }
 
-    pub fn draw(&mut self, image: &mut ImageAtlas, font: &mut FontAtlas, items: Vec<(Area, CanvasItem)>) {
-        self.canvas_renderer.prepare(
+    pub fn draw(&mut self, atlas: &mut Atlas, items: Vec<(Area, Item)>) {
+        self.renderer.prepare(
             &self.device,
             &self.queue,
             self.config.width as f32,
             self.config.height as f32,
-            image, font, items
+            atlas, items
         );
 
         let output = self.surface.get_current_texture().unwrap();
@@ -150,7 +150,7 @@ impl Canvas {
             timestamp_writes: None,
         });
 
-        self.canvas_renderer.render(&mut rpass);
+        self.renderer.render(&mut rpass);
 
         drop(rpass);
 
