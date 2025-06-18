@@ -9,13 +9,13 @@ repository = "https://github.com/ramp-stack/pelican_ui"
 
 
 [dependencies]
-pelican_ui_proc = "0.1.0"
-maverick_os = "0.1.5"
-#maverick_os = {path="../maverick_os"}
+pelican_ui_proc = {path="../pelican_ui_proc"} #"0.1.0"
+#maverick_os = "0.1.5"
+maverick_os = {path="../maverick_os"}
 downcast-rs = "2.0.1"
 image = "0.25.6"
 nsvg = "0.5.1"
 wgpu = "25.0.2"
-wgpu_canvas = "4.0.6"
-#wgpu_canvas = {path="../wgpu_canvas"}
+#wgpu_canvas = "4.0.6"
+wgpu_canvas = {path="../wgpu_canvas"}
 include_dir = { version = "0.7.4", features = ["glob"] }
