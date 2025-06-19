@@ -1,5 +1,5 @@
 use super::Context;
-use wgpu_canvas::{Area as CanvasArea, CanvasItem, Text, Shape, Span};
+use wgpu_canvas::{Area as CanvasArea, Item as CanvasItem, Text, Shape};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Area {
@@ -102,15 +102,9 @@ impl Scale {
 pub(crate) trait Scaling {
     fn scale(self, scale: &Scale) -> Self;
 
-    fn scale_text(text: Text, scale: &Scale) -> Text {
-        Text::new(
-            text.spans.into_iter().map(|s|
-                Span::new(s.text, scale.physical(s.font_size), scale.physical(s.line_height), s.font, s.color)
-            ).collect(),
-            text.width.map(|w| scale.physical(w)),
-            text.align,
-            text.cursor,
-        )
+    fn scale_text(mut text: Text, scale: &Scale) -> Text {
+        text.scale = scale.0 as f32;
+        text
     }
 
     fn scale_shape(shape: Shape, scale: &Scale) -> Shape {
@@ -130,13 +124,13 @@ pub(crate) trait Scaling {
 impl Scaling for CanvasItem {
     fn scale(self, scale: &Scale) -> Self {
         match self {
-            CanvasItem::Shape(shape, color) => wgpu_canvas::CanvasItem::Shape(
+            CanvasItem::Shape(shape, color) => CanvasItem::Shape(
                 Self::scale_shape(shape, scale), color
             ),
-            CanvasItem::Image(shape, image, color) => wgpu_canvas::CanvasItem::Image(
+            CanvasItem::Image(shape, image, color) => CanvasItem::Image(
                 Self::scale_shape(shape, scale), image, color
             ),
-            CanvasItem::Text(text) => wgpu_canvas::CanvasItem::Text(Self::scale_text(text, scale))
+            CanvasItem::Text(text) => CanvasItem::Text(Self::scale_text(text, scale))
         }
     }
 }

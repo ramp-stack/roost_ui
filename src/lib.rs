@@ -2,14 +2,15 @@ use std::collections::BTreeMap;
 use std::sync::{MutexGuard, Mutex, Arc};
 use std::any::TypeId;
 
-use wgpu_canvas::{ImageAtlas, FontAtlas};
+use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 
 use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
 pub use maverick_os::hardware::Context as HardwareContext;
-use maverick_os::runtime::Context as RuntimeContext;
+use maverick_os::runtime::{Services, ServiceList};
 
-pub use maverick_os::hardware::*;
-pub use maverick_os::runtime::{Services, ServiceList, Service};
+pub use maverick_os::hardware;
+pub use maverick_os::runtime;
+pub use maverick_os::air;
 pub use maverick_os::{MaverickOS, start as maverick_start, State};
 
 pub use include_dir::include_dir as include_assets;
@@ -49,8 +50,7 @@ impl_downcast!(Plugin);
 
 pub struct Assets {
     dirs: Vec<Dir<'static>>,
-    image: ImageAtlas,
-    font: FontAtlas,
+    atlas: Atlas,
 }
 
 impl Default for Assets {
@@ -63,19 +63,18 @@ impl Assets {
     pub fn new() -> Self {
         Assets {
             dirs: Vec::new(),
-            image: ImageAtlas::default(),            
-            font: FontAtlas::default(), 
+            atlas: Atlas::default(),            
         } 
     }
 
-    pub fn add_font(&mut self, font: &[u8]) -> resources::Font {self.font.add(font)}
-    pub fn add_image(&mut self, image: image::RgbaImage) -> resources::Image {self.image.add(image)}
+    pub fn add_font(&mut self, font: &[u8]) -> resources::Font {self.atlas.add_font(font).unwrap()}
+    pub fn add_image(&mut self, image: image::RgbaImage) -> resources::Image {self.atlas.add_image(image)}
     pub fn add_svg(&mut self, svg: &[u8], scale: f32) -> resources::Image {
         let svg = std::str::from_utf8(svg).unwrap();
         let svg = nsvg::parse_str(svg, nsvg::Units::Pixel, 96.0).unwrap();
         let rgba = svg.rasterize(scale).unwrap();
         let size = rgba.dimensions();
-        self.image.add(image::RgbaImage::from_raw(size.0, size.1, rgba.into_raw()).unwrap())
+        self.atlas.add_image(image::RgbaImage::from_raw(size.0, size.1, rgba.into_raw()).unwrap())
     }
 
     pub fn load_font(&mut self, file: &str) -> Option<resources::Font> {
@@ -109,7 +108,7 @@ impl Assets {
 
 pub struct Context {
     pub hardware: HardwareContext,
-    pub runtime: RuntimeContext,
+    pub runtime: runtime::Context,
     pub assets: Assets,
     pub theme: Theme,
     plugins: PluginList,
@@ -118,7 +117,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Arc<Mutex<State>>) -> Self {
+    pub fn new(hardware: HardwareContext, runtime: runtime::Context, state: Arc<Mutex<State>>) -> Self {
         let mut assets = Assets::new();
         assets.include_assets(include_assets!("./resources"));
         Context {
@@ -174,8 +173,7 @@ pub trait Plugins {
     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>>;
 }
 
-impl AsMut<FontAtlas> for Context {fn as_mut(&mut self) -> &mut FontAtlas {&mut self.assets.font}}
-impl AsMut<ImageAtlas> for Context {fn as_mut(&mut self) -> &mut ImageAtlas {&mut self.assets.image}}
+impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.assets.atlas}}
 
 pub trait Application: Services + Plugins {
     fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
@@ -193,11 +191,10 @@ pub struct PelicanEngine<A: Application> {
     context: Context,
     sized_app: SizedBranch,
     application: Box<dyn Drawable>,
-    event_handler: EventHandler
+    event_handler: EventHandler,
+    items: Vec<(Area, CanvasItem)>
 }
-//  impl<A: Application> Services for PelicanEngine<A> {
-//      fn services() -> ServiceList {A::services()}
-//  }
+
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
     async fn new(context: &mut maverick_os::Context) -> Self {
         let size = context.window.size;
@@ -218,7 +215,8 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
             context,
             sized_app,
             application,
-            event_handler: EventHandler::new()
+            event_handler: EventHandler::new(),
+            items: Vec::new()
         }
     }
         
@@ -261,10 +259,13 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
 
                     let size_request = _Drawable::request_size(&*self.application, &mut self.context);
                     self.sized_app = self.application.build(&mut self.context, self.screen, size_request);
-                    let items = self.application.draw(
+                    let items: Vec<_> = self.application.draw(
                         self.sized_app.clone(), (0.0, 0.0), (0.0, 0.0, self.screen.0, self.screen.1),
                     ).into_iter().map(|(a, i)| (a.scale(&self.scale), i.scale(&self.scale))).collect();
-                    self.canvas.draw(&mut self.context.assets.image, &mut self.context.assets.font, items);
+                    if self.items != items {
+                        self.items = items.clone();
+                        self.canvas.draw(&mut self.context.assets.atlas, items);
+                    }
                 },
                 Lifetime::MemoryWarning => {},
             },
