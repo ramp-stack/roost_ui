@@ -6,10 +6,11 @@ use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 
 use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
 pub use maverick_os::hardware::Context as HardwareContext;
-use maverick_os::runtime::Context as RuntimeContext;
+use maverick_os::runtime::{Services, ServiceList};
 
-pub use maverick_os::hardware::*;
-pub use maverick_os::runtime::{Services, ServiceList, Service};
+pub use maverick_os::hardware;
+pub use maverick_os::runtime;
+pub use maverick_os::air;
 pub use maverick_os::{MaverickOS, start as maverick_start, State};
 
 pub use include_dir::include_dir as include_assets;
@@ -107,7 +108,7 @@ impl Assets {
 
 pub struct Context {
     pub hardware: HardwareContext,
-    pub runtime: RuntimeContext,
+    pub runtime: runtime::Context,
     pub assets: Assets,
     pub theme: Theme,
     plugins: PluginList,
@@ -116,7 +117,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Arc<Mutex<State>>) -> Self {
+    pub fn new(hardware: HardwareContext, runtime: runtime::Context, state: Arc<Mutex<State>>) -> Self {
         let mut assets = Assets::new();
         assets.include_assets(include_assets!("./resources"));
         Context {
