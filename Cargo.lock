@@ -1847,6 +1847,7 @@ name = "maverick_os"
 version = "0.1.5"
 dependencies = [
  "air",
+ "android-activity",
  "async-trait",
  "block",
  "cli-clipboard",
@@ -2738,8 +2739,6 @@ dependencies = [
 [[package]]
 name = "pelican_ui_proc"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "144bbf9eba1c9d31c2d491e3a2e1a0dbe33f52b189ecd19ccd857ca8486e4cb3"
 dependencies = [
  "proc-macro2 1.0.95",
  "quote 1.0.40",
@@ -4358,8 +4357,6 @@ dependencies = [
 [[package]]
 name = "wgpu_canvas"
 version = "4.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "529b537499f09cc17a96301db2958ecbdcba54e82ed579d59f8d55bc7accf215"
 dependencies = [
  "bytemuck",
  "fast_image_resize",

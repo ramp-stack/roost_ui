@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::sync::{MutexGuard, Mutex, Arc};
+// use std::ops::{Deref, DerefMut};
 use std::any::TypeId;
 
 use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
@@ -106,6 +107,21 @@ impl Assets {
     }
 }
 
+pub struct PluginGuard<'a, P: Plugin>(Option<P>, &'a mut Context);
+impl<'a, P: Plugin> PluginGuard<'a, P> {
+    pub fn get(&mut self) -> (&mut P, &mut Context) {
+        (self.0.as_mut().unwrap(), &mut *self.1)
+    }
+    pub fn run<T>(&mut self, clo: impl FnOnce(&mut P, &mut Context) -> T) -> T {
+        clo(self.0.as_mut().unwrap(), self.1)
+    }
+}
+impl<'a, P: Plugin> Drop for PluginGuard<'a, P> {
+    fn drop(&mut self) {
+        self.1.plugins.insert(TypeId::of::<P>(), Box::new(self.0.take().unwrap()));
+    }
+}
+
 pub struct Context {
     pub hardware: HardwareContext,
     pub runtime: runtime::Context,
@@ -135,10 +151,10 @@ impl Context {
         self.events.push_back(Box::new(event));
     }
 
-    pub fn get<P: Plugin + 'static>(&mut self) -> &mut P {
-        self.plugins.get_mut(&TypeId::of::<P>())
+    pub fn get<P: Plugin + 'static>(&mut self) -> PluginGuard<'_, P> {
+        PluginGuard(Some(*self.plugins.remove(&TypeId::of::<P>())
             .unwrap_or_else(|| panic!("Plugin Not Configured: {:?}", std::any::type_name::<P>()))
-            .downcast_mut().unwrap()
+            .downcast().ok().unwrap()), self)
     }
 
     pub fn state<'a>(&'a mut self) -> MutexGuard<'a, State> {
