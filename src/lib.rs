@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
-use std::sync::{MutexGuard, Mutex, Arc};
-// use std::ops::{Deref, DerefMut};
 use std::any::TypeId;
+use std::sync::Arc;
 
 use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 
@@ -129,11 +128,11 @@ pub struct Context {
     pub theme: Theme,
     plugins: PluginList,
     events: Events,
-    state: Arc<Mutex<State>>
+    state: Option<State>
 }
 
 impl Context {
-    pub fn new(hardware: HardwareContext, runtime: runtime::Context, state: Arc<Mutex<State>>) -> Self {
+    pub fn new(hardware: HardwareContext, runtime: runtime::Context, state: Option<State>) -> Self {
         let mut assets = Assets::new();
         assets.include_assets(include_assets!("./resources"));
         Context {
@@ -157,8 +156,8 @@ impl Context {
             .downcast().ok().unwrap()), self)
     }
 
-    pub fn state<'a>(&'a mut self) -> MutexGuard<'a, State> {
-        self.state.lock().unwrap()
+    pub fn state(&mut self) -> &mut State {
+        self.state.as_mut().unwrap()
     }
 
   //pub fn state(&mut self) -> &mut State {
@@ -212,17 +211,18 @@ pub struct PelicanEngine<A: Application> {
 }
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
-    async fn new(context: &mut maverick_os::Context) -> Self {
-        let size = context.window.size;
-        let (canvas, size) = Canvas::new(context.window.handle.clone(), size.0, size.1).await;
-        let scale = Scale(context.window.scale_factor);
+    async fn new(ctx: &mut maverick_os::Context) -> Self {
+        let size = ctx.window.size;
+        let (canvas, size) = Canvas::new(ctx.window.handle.clone(), size.0, size.1).await;
+        let scale = Scale(ctx.window.scale_factor);
         let screen = (scale.logical(size.0 as f32), scale.logical(size.1 as f32));
-        let mut context = Context::new(context.hardware.clone(), context.runtime.clone(), context.state.clone());
+        let mut context = Context::new(ctx.hardware.clone(), ctx.runtime.clone(), ctx.state.take());
         let plugins = A::plugins(&mut context);
         context.plugins = plugins.into_iter().map(|p| ((*p).type_id(), p)).collect();
         let mut application = A::new(&mut context).await;
         let size_request = _Drawable::request_size(&*application, &mut context);
         let sized_app = application.build(&mut context, screen, size_request);
+        ctx.state = context.state.take();
         PelicanEngine{
             _p: std::marker::PhantomData::<A>,
             scale,
@@ -237,6 +237,7 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
     }
         
     async fn on_event(&mut self, context: &mut maverick_os::Context, event: WindowEvent) {
+        self.context.state = context.state.take();
         match event {
             WindowEvent::Lifetime(lifetime) => match lifetime {
                 Lifetime::Resized => {
@@ -287,6 +288,7 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
             },
             WindowEvent::Input(input) => {if let Some(event) = self.event_handler.on_input(&self.scale, input) {self.context.events.push_back(event)}}
         }
+        context.state = self.context.state.take();
     }
 }
 
