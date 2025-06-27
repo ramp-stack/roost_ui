@@ -76,15 +76,15 @@ pub(crate) struct EventHandler {
     touching: bool,
     touch_start_time: Option<Instant>,
     mouse: (f32, f32),
-    scroll: (f32, f32)
-
+    scroll: Option<(f32, f32)>,
 }
+
 impl EventHandler {
     pub fn new() -> Self {EventHandler{
         touching: false,
         touch_start_time: None,
         mouse: (0.0, 0.0),
-        scroll: (0.0, 0.0),
+        scroll: None,
     }}
 
     pub fn on_input(&mut self, scale: &Scale, input: Input) -> Option<Box<dyn Event>> {
@@ -94,13 +94,14 @@ impl EventHandler {
                 let position = (scale.logical(location.0), scale.logical(location.1));
                 let event = match phase {
                     TouchPhase::Started => {
+                        self.scroll = Some(position);
                         self.touching = true;
                         self.touch_start_time = Some(Instant::now());
                         Some(MouseState::Pressed)
                     },
                     TouchPhase::Ended | TouchPhase::Cancelled => {
                         self.touching = false;
-                        self.scroll = (0.0, 0.0);
+                        self.scroll = None;
 
                         let held_for = self.touch_start_time
                             .take()
@@ -114,13 +115,13 @@ impl EventHandler {
                         }
                     },
                     TouchPhase::Moved => {
-                        self.touching.then(|| {
-                            let dx = location.0 - self.mouse.0;
-                            let dy = location.1 - self.mouse.1;
-                    
-                            let scroll_speed = 0.3; // Tune this to adjust sensitivity
-                            let scroll_x = -dx * scroll_speed;
-                            let scroll_y = -dy * scroll_speed;
+                        println!("Touch Phase Moved");
+                        self.scroll.map(|(prev_x, prev_y)| {
+                            self.scroll = Some(position);
+                            let dx = position.0 - prev_x;
+                            let dy = position.1 - prev_y;
+                            let scroll_x = -(dx as f32) * 0.7;
+                            let scroll_y = -(dy as f32) * 0.7;
                     
                             (scroll_x.abs() > 0.01 || scroll_y.abs() > 0.01).then_some(
                                 MouseState::Scroll(scroll_x, scroll_y)
@@ -146,18 +147,31 @@ impl EventHandler {
             },
             Input::MouseWheel{delta, phase, ..} => {
                 match phase {
+                    TouchPhase::Started => {
+                        self.scroll = Some((0.0, 0.0));
+                        None
+                    }
                     TouchPhase::Moved => {
-                        let pos = match delta {
-                            MouseScrollDelta::LineDelta(x, y) => (x, y),
-                            MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
-                        };
-                        let scroll_speed = 0.2; // Tune this to adjust sensitivity
-                        self.scroll.0 += -pos.0 * scroll_speed;
-                        self.scroll.1 += -pos.1 * scroll_speed;
-                        Some(Box::new(MouseEvent{position: Some(self.mouse), state: MouseState::Scroll(self.scroll.0, self.scroll.1)}))
+                        self.scroll.map(|(prev_x, prev_y)| {
+                            println!("Scrolling...");
+                            let pos = match delta {
+                                MouseScrollDelta::LineDelta(x, y) => {
+                                    let x_dir = x.signum();
+                                    let y_dir = y.signum();
+                                    (x_dir, y_dir)
+                                },
+                                MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
+                            };
+                            (pos.0.abs() > 0.01 || pos.1.abs() > 0.01).then(|| {
+                                let scroll_x = prev_x + -pos.0 * 0.2;
+                                let scroll_y = prev_y + -pos.1 * 0.2;
+                                Box::new(MouseEvent{position: Some(self.mouse), state: MouseState::Scroll(scroll_x, scroll_y)}) as Box<dyn Event>
+                            })
+                        }).flatten()
                     },
                     TouchPhase::Ended => {
-                        self.scroll = (0.0, 0.0);
+                        println!("STOP.");
+                        self.scroll = None;
                         None
                     },
                     _ => None
