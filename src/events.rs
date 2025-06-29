@@ -74,17 +74,19 @@ impl Event for TickEvent {
 
 pub(crate) struct EventHandler {
     touching: bool,
-    touch_start_time: Option<Instant>,
+    start_touch: Option<(f32, f32)>,
     mouse: (f32, f32),
     scroll: Option<(f32, f32)>,
+    hold: Option<Instant>,
 }
 
 impl EventHandler {
     pub fn new() -> Self {EventHandler{
         touching: false,
-        touch_start_time: None,
+        start_touch: None,
         mouse: (0.0, 0.0),
         scroll: None,
+        hold: None
     }}
 
     pub fn on_input(&mut self, scale: &Scale, input: Input) -> Option<Box<dyn Event>> {
@@ -94,24 +96,21 @@ impl EventHandler {
                 let position = (scale.logical(location.0), scale.logical(location.1));
                 let event = match phase {
                     TouchPhase::Started => {
+                        self.hold = Some(Instant::now());
                         self.scroll = Some(position);
                         self.touching = true;
-                        self.touch_start_time = Some(Instant::now());
+                        self.start_touch = Some(position);
                         Some(MouseState::Pressed)
                     },
                     TouchPhase::Ended | TouchPhase::Cancelled => {
                         self.touching = false;
                         self.scroll = None;
 
-                        let held_for = self.touch_start_time
-                            .take()
-                            .map(|start| start.elapsed())
-                            .unwrap_or_default();
+                        let hold = self.hold.map(|start| start.elapsed()).unwrap_or_default();
 
-                        if held_for < Duration::from_millis(200) {
-                            Some(MouseState::Released)
-                        } else {
-                            Some(MouseState::LongPressReleased)
+                        match (self.start_touch.unwrap().1 - position.1).abs() < 25.0 && hold < Duration::from_millis(200) {
+                            true => Some(MouseState::Released),
+                            false => Some(MouseState::LongPressReleased)
                         }
                     },
                     TouchPhase::Moved => {
@@ -120,8 +119,8 @@ impl EventHandler {
                             self.scroll = Some(position);
                             let dx = position.0 - prev_x;
                             let dy = position.1 - prev_y;
-                            let scroll_x = -(dx as f32) * 0.7;
-                            let scroll_y = -(dy as f32) * 0.7;
+                            let scroll_x = -(dx as f32) * 1.0;
+                            let scroll_y = -(dy as f32) * 1.0;
                     
                             (scroll_x.abs() > 0.01 || scroll_y.abs() > 0.01).then_some(
                                 MouseState::Scroll(scroll_x, scroll_y)
