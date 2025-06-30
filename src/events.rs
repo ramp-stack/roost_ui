@@ -107,14 +107,12 @@ impl EventHandler {
                         self.scroll = None;
 
                         let hold = self.hold.map(|start| start.elapsed()).unwrap_or_default();
-
-                        match (self.start_touch.unwrap().1 - position.1).abs() < 25.0 && hold < Duration::from_millis(200) {
+                        match (self.start_touch.unwrap().1 - position.1).abs() < 25.0 && hold < Duration::from_millis(600) {
                             true => Some(MouseState::Released),
                             false => Some(MouseState::LongPressReleased)
                         }
                     },
                     TouchPhase::Moved => {
-                        println!("Touch Phase Moved");
                         self.scroll.map(|(prev_x, prev_y)| {
                             self.scroll = Some(position);
                             let dx = position.0 - prev_x;
@@ -152,13 +150,8 @@ impl EventHandler {
                     }
                     TouchPhase::Moved => {
                         self.scroll.map(|(prev_x, prev_y)| {
-                            println!("Scrolling...");
                             let pos = match delta {
-                                MouseScrollDelta::LineDelta(x, y) => {
-                                    let x_dir = x.signum();
-                                    let y_dir = y.signum();
-                                    (x_dir, y_dir)
-                                },
+                                MouseScrollDelta::LineDelta(x, y) => (x.signum(), y.signum()),
                                 MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                             };
                             (pos.0.abs() > 0.01 || pos.1.abs() > 0.01).then(|| {
@@ -169,7 +162,6 @@ impl EventHandler {
                         }).flatten()
                     },
                     TouchPhase::Ended => {
-                        println!("STOP.");
                         self.scroll = None;
                         None
                     },
