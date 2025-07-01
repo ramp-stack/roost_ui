@@ -248,16 +248,18 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                     self.screen = size;
                 },
                 Lifetime::Resumed => {
+                    println!("LIFETIME RESUMED");
                     self.scale.0 = context.window.scale_factor;
                     let size = context.window.size;
                     let size = self.canvas.resize(Some(context.window.handle.clone()), size.0, size.1);
                     let size = (self.scale.logical(size.0 as f32), self.scale.logical(size.1 as f32));
                     self.screen = size;
                 },
-                Lifetime::Paused => {},
-                Lifetime::Close => {},
+                Lifetime::Paused => {println!("LIFETIME PAUSED");},
+                Lifetime::Close => {println!("LIFETIME CLOSED");},
                 Lifetime::Draw => {//Size before events because the events are given between
                                    //resizing
+                    // println!("LIFETIME DRAW");
                     self.application.event(&mut self.context, self.sized_app.clone(), Box::new(TickEvent));
 
                     while let Some(event) = self.context.events.pop_front() {

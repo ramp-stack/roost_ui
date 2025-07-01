@@ -106,6 +106,7 @@ impl Canvas {
             let limits = self.device.limits();
             self.config.width = width.min(limits.max_texture_dimension_2d);
             self.config.height = height.min(limits.max_texture_dimension_2d);
+            println!("Configuring surface...");
             self.surface.configure(&self.device, &self.config);
             if SAMPLE_COUNT > 1 {
                 self.msaa_view = Some(Self::create_msaa_view(&self.device, &self.config));
@@ -117,6 +118,7 @@ impl Canvas {
     }
 
     pub fn draw(&mut self, atlas: &mut Atlas, items: Vec<(Area, Item)>) {
+        println!("DRAWING");
         self.renderer.prepare(
             &self.device,
             &self.queue,
@@ -156,6 +158,7 @@ impl Canvas {
 
         self.queue.submit(Some(encoder.finish()));
         output.present();
+        println!("DRAW DONE");
     }
 
     fn create_msaa_view(device: &Device, config: &SurfaceConfiguration) -> TextureView {
