@@ -137,6 +137,7 @@ impl IconResources {
         icons.insert("messages", assets.add_svg(&assets.load_file("icons/messages.svg").unwrap(), quality));
         icons.insert("microphone", assets.add_svg(&assets.load_file("icons/microphone.svg").unwrap(), quality));
         icons.insert("monitor", assets.add_svg(&assets.load_file("icons/monitor.svg").unwrap(), quality));
+        icons.insert("notification", assets.add_svg(&assets.load_file("icons/notification.svg").unwrap(), quality));
         icons.insert("paste", assets.add_svg(&assets.load_file("icons/paste.svg").unwrap(), quality));
         icons.insert("photos", assets.add_svg(&assets.load_file("icons/photos.svg").unwrap(), quality));
         icons.insert("play_store", assets.add_svg(&assets.load_file("icons/play_store.svg").unwrap(), quality));

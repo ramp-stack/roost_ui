@@ -7,6 +7,7 @@ use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
 pub use maverick_os::hardware::Context as HardwareContext;
 use maverick_os::runtime::{Services, ServiceList};
+use maverick_os::hardware::Notifications;
 
 pub use maverick_os::hardware;
 pub use maverick_os::runtime;
@@ -212,6 +213,8 @@ pub struct PelicanEngine<A: Application> {
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
     async fn new(ctx: &mut maverick_os::Context) -> Self {
+        #[cfg(target_os = "ios")]
+        Notifications::register();
         let size = ctx.window.size;
         let (canvas, size) = Canvas::new(ctx.window.handle.clone(), size.0, size.1).await;
         let scale = Scale(ctx.window.scale_factor);
@@ -248,18 +251,17 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                     self.screen = size;
                 },
                 Lifetime::Resumed => {
-                    println!("LIFETIME RESUMED");
+                    let _ = self.items.drain(..);
                     self.scale.0 = context.window.scale_factor;
                     let size = context.window.size;
                     let size = self.canvas.resize(Some(context.window.handle.clone()), size.0, size.1);
                     let size = (self.scale.logical(size.0 as f32), self.scale.logical(size.1 as f32));
                     self.screen = size;
                 },
-                Lifetime::Paused => {println!("LIFETIME PAUSED");},
-                Lifetime::Close => {println!("LIFETIME CLOSED");},
+                Lifetime::Paused => {println!("     LIFETIME PAUSED");},
+                Lifetime::Close => {},
                 Lifetime::Draw => {//Size before events because the events are given between
                                    //resizing
-                    // println!("LIFETIME DRAW");
                     self.application.event(&mut self.context, self.sized_app.clone(), Box::new(TickEvent));
 
                     while let Some(event) = self.context.events.pop_front() {
@@ -278,9 +280,8 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
 
                     let size_request = _Drawable::request_size(&*self.application, &mut self.context);
                     self.sized_app = self.application.build(&mut self.context, self.screen, size_request);
-                    let items: Vec<_> = self.application.draw(
-                        self.sized_app.clone(), (0.0, 0.0), (0.0, 0.0, self.screen.0, self.screen.1),
-                    ).into_iter().map(|(a, i)| (a.scale(&self.scale), i.scale(&self.scale))).collect();
+                    let drawn = self.application.draw(self.sized_app.clone(), (0.0, 0.0), (0.0, 0.0, self.screen.0, self.screen.1));
+                    let items: Vec<_> = drawn.into_iter().map(|(a, i)| (a.scale(&self.scale), i.scale(&self.scale))).collect();
                     if self.items != items {
                         self.items = items.clone();
                         self.canvas.draw(&mut self.context.assets.atlas, items);
