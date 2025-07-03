@@ -7,7 +7,6 @@ use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
 pub use maverick_os::hardware::Context as HardwareContext;
 use maverick_os::runtime::{Services, ServiceList};
-use maverick_os::hardware::Notifications;
 
 pub use maverick_os::hardware;
 pub use maverick_os::runtime;

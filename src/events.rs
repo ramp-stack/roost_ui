@@ -113,17 +113,17 @@ impl EventHandler {
                         }
                     },
                     TouchPhase::Moved => {
-                        self.scroll.map(|(prev_x, prev_y)| {
+                        self.scroll.and_then(|(prev_x, prev_y)| {
                             self.scroll = Some(position);
                             let dx = position.0 - prev_x;
                             let dy = position.1 - prev_y;
-                            let scroll_x = -(dx as f32) * 1.0;
-                            let scroll_y = -(dy as f32) * 1.0;
+                            let scroll_x = -dx * 1.0;
+                            let scroll_y = -dy * 1.0;
                     
                             (scroll_x.abs() > 0.01 || scroll_y.abs() > 0.01).then_some(
                                 MouseState::Scroll(scroll_x, scroll_y)
                             )
-                        }).flatten()
+                        })
                     }
                 }.map(|state| Box::new(MouseEvent{position: Some(position), state}) as Box<dyn Event>);
                 self.mouse = position;
@@ -149,7 +149,7 @@ impl EventHandler {
                         None
                     }
                     TouchPhase::Moved => {
-                        self.scroll.map(|(prev_x, prev_y)| {
+                        self.scroll.and_then(|(prev_x, prev_y)| {
                             let pos = match delta {
                                 MouseScrollDelta::LineDelta(x, y) => (x.signum(), y.signum()),
                                 MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
@@ -159,7 +159,7 @@ impl EventHandler {
                                 let scroll_y = prev_y + -pos.1 * 0.2;
                                 Box::new(MouseEvent{position: Some(self.mouse), state: MouseState::Scroll(scroll_x, scroll_y)}) as Box<dyn Event>
                             })
-                        }).flatten()
+                        })
                     },
                     TouchPhase::Ended => {
                         self.scroll = None;

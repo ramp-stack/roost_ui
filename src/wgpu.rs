@@ -7,7 +7,7 @@ use wgpu_canvas::{Renderer, Atlas, Area, Item};
 const SAMPLE_COUNT: u32 = 4;
 
 pub struct Canvas {
-    instance: Instance,
+    _instance: Instance,
     surface: Surface<'static>,
     device: Device,
     queue: Queue,
@@ -85,7 +85,7 @@ impl Canvas {
         let size = (config.width, config.height);
 
         (Canvas{
-            instance,
+            _instance: instance,
             surface,
             device,
             queue,
@@ -97,11 +97,12 @@ impl Canvas {
     }
 
     pub fn resize<W: WindowHandle + 'static>(
-        &mut self, new_window: Option<Arc<W>>, width: u32, height: u32
+        &mut self, _new_window: Option<Arc<W>>, width: u32, height: u32
     ) -> (u32, u32) {
-        if let Some(new_window) = new_window {
-            // self.surface = self.instance.create_surface(new_window).unwrap();
-        }
+        // if let Some(new_window) = new_window {
+        //     self.surface = self.instance.create_surface(new_window).unwrap();
+        // }
+
         if width > 0 && height > 0 {
             let limits = self.device.limits();
             self.config.width = width.min(limits.max_texture_dimension_2d);
