@@ -1,5 +1,6 @@
 use crate::Assets;
 use crate::resources;
+use crate::Context;
 
 use std::collections::HashMap;
 
@@ -45,6 +46,12 @@ impl Illustrations {
         illustrations.insert("emu", assets.add_svg(&assets.load_file("brand/illustrations/emu.svg").unwrap(), 8.0));
 
         Illustrations(illustrations)
+    }
+
+    pub fn insert(&mut self, assets: &mut Assets, name: &'static str) {
+        let path = format!("{}.png", name);
+        let illustration = assets.add_image(image::load_from_memory(&assets.load_file(&path).expect("me")).expect("no me").into());
+        self.0.insert(name, illustration);
     }
 
     pub fn get(&self, name: &'static str) -> resources::Image {

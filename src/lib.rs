@@ -147,6 +147,7 @@ impl Context {
     }
 
     pub fn trigger_event(&mut self, event: impl Event) {
+        println!("Event triggered {:?}", event);
         self.events.push_back(Box::new(event));
     }
 
@@ -212,6 +213,7 @@ pub struct PelicanEngine<A: Application> {
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
     async fn new(ctx: &mut maverick_os::Context) -> Self {
+        use crate::hardware::Notifications;
         #[cfg(target_os = "ios")]
         Notifications::register();
         let size = ctx.window.size;
