@@ -1,6 +1,5 @@
 use crate::Assets;
 use crate::resources;
-use crate::Context;
 
 use std::collections::HashMap;
 
@@ -38,7 +37,6 @@ pub struct Illustrations(HashMap<&'static str, resources::Image>);
 impl Illustrations {
     pub fn default(assets: &mut Assets) -> Self {
         let mut illustrations = HashMap::new();
-
         illustrations.insert("error", assets.add_svg(&assets.load_file("brand/illustrations/error.svg").unwrap(), 8.0));
         illustrations.insert("dodo", assets.add_svg(&assets.load_file("brand/illustrations/dodo.svg").unwrap(), 8.0));
         illustrations.insert("hummingbird", assets.add_svg(&assets.load_file("brand/illustrations/hummingbird.svg").unwrap(), 8.0));
