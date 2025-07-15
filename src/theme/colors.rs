@@ -1,7 +1,8 @@
 use wgpu_canvas::Color;
+use std::collections::HashMap;
 
 /// Represents a collection of color resources used throughout the UI, including background, text, button, and status colors.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct ColorResources {
     /// Defines the background colors of the UI.
     pub background: BackgroundColor,
@@ -17,6 +18,8 @@ pub struct ColorResources {
     pub brand: BrandColor,
     /// Defines various shades used for UI elements (black, white, light/dark variants, transparency).
     pub shades: ShadesColor,
+
+    pub illustration: IllustrationColors,
 }
 
 impl ColorResources {
@@ -41,8 +44,9 @@ impl ColorResources {
         brand: BrandColor,
         shades: ShadesColor,
         button: ButtonColors,
+        illustration: IllustrationColors,
     ) -> Self {
-        ColorResources { background, outline, status, text, brand, shades, button }
+        ColorResources { background, outline, status, text, brand, shades, button, illustration }
     }
 }
 
@@ -175,6 +179,11 @@ impl Default for StatusColor {
     }
 }
 
+#[derive(Clone, Debug, Default)]
+pub struct IllustrationColors {
+    pub colors: HashMap<&'static str, Color>,
+}
+
 /// Defines the colors for buttons in various states, including default, disabled, hover, pressed, etc.
 #[derive(Copy, Clone, Debug)]
 pub struct ButtonColors {
@@ -257,9 +266,9 @@ impl Default for ButtonColors {
                 outline: Color::from_hex("585250", 255),
             },
             secondary_selected: ButtonColorScheme {
-                background: Color::from_hex("262322", 255),
+                background: Color::from_hex("000000", 255),
                 label: Color::from_hex("ffffff", 255),
-                outline: Color::from_hex("585250", 255),
+                outline: Color::from_hex("ffffff", 255),
             },
             secondary_pressed: ButtonColorScheme {
                 background: Color::from_hex("262322", 255),

@@ -1,5 +1,6 @@
 use crate::Assets;
 use crate::resources;
+use crate::Context;
 
 use std::collections::HashMap;
 
@@ -7,7 +8,7 @@ use std::collections::HashMap;
 ///
 /// This struct contains a set of icons that are loaded by the application at runtime.
 /// Icons can be accessed by their string name, and they are loaded from SVG files.
-/// The icons are loaded with a quality setting to ensure clarity across various screen
+/// The icons are loaded with a Self::QUALITY setting to ensure clarity across various screen
 /// resolutions.
 ///
 /// ## Default Icons
@@ -76,136 +77,82 @@ pub struct IconResources(HashMap<&'static str, resources::Image>);
 
 
 impl IconResources {
-    /// Creates a new instance of `IconResources` and loads the default set of icons.
-    ///
-    /// This method loads a collection of SVG icons from the specified paths and stores them
-    /// in a `HashMap`. Each icon is given a unique name (as a string), which can later be used
-    /// to access the icon resource.
-    ///
-    /// # Arguments
-    ///
-    /// * `assets` - A mutable reference to the Assets, used for loading the SVG files.
-    ///
-    /// # Returns
-    ///
-    /// A new `IconResources` instance containing the default set of icons.
+    pub const QUALITY: f32 = 8.0;
     pub fn default(assets: &mut Assets) -> Self {
         let mut icons = HashMap::new();
-        let quality = 8.0; // Quality factor for the SVG rendering
 
-        // Load each SVG file and insert them into the icons HashMap
-        icons.insert("accounts", assets.add_svg(&assets.load_file("icons/accounts.svg").unwrap(), quality));
-        icons.insert("add", assets.add_svg(&assets.load_file("icons/add.svg").unwrap(), quality));
-        icons.insert("app_store", assets.add_svg(&assets.load_file("icons/app_store.svg").unwrap(), quality));
-        icons.insert("back", assets.add_svg(&assets.load_file("icons/back.svg").unwrap(), quality));
-        icons.insert("block", assets.add_svg(&assets.load_file("icons/block.svg").unwrap(), quality));
-        icons.insert("unblock", assets.add_svg(&assets.load_file("icons/unblock.svg").unwrap(), quality));
-        icons.insert("boot", assets.add_svg(&assets.load_file("icons/boot.svg").unwrap(), quality));
-        icons.insert("unboot", assets.add_svg(&assets.load_file("icons/unboot.svg").unwrap(), quality));
-        icons.insert("back_arrow", assets.add_svg(&assets.load_file("icons/back_arrow.svg").unwrap(), quality));
-        icons.insert("back_to", assets.add_svg(&assets.load_file("icons/back_arrow.svg").unwrap(), quality));
-        icons.insert("backspace", assets.add_svg(&assets.load_file("icons/backspace.svg").unwrap(), quality));
-        icons.insert("bitcoin", assets.add_svg(&assets.load_file("icons/bitcoin.svg").unwrap(), quality));
-        icons.insert("camera", assets.add_svg(&assets.load_file("icons/camera.svg").unwrap(), quality));
-        icons.insert("cancel", assets.add_svg(&assets.load_file("icons/cancel.svg").unwrap(), quality));
-        icons.insert("capslock", assets.add_svg(&assets.load_file("icons/capslock.svg").unwrap(), quality));
-        icons.insert("capslock_on", assets.add_svg(&assets.load_file("icons/capslock_on.svg").unwrap(), quality));
-        icons.insert("checkmark", assets.add_svg(&assets.load_file("icons/checkmark.svg").unwrap(), quality));
-        icons.insert("close", assets.add_svg(&assets.load_file("icons/close.svg").unwrap(), quality));
-        icons.insert("copy", assets.add_svg(&assets.load_file("icons/copy.svg").unwrap(), quality));
-        icons.insert("credential", assets.add_svg(&assets.load_file("icons/credential.svg").unwrap(), quality));
-        icons.insert("down_arrow", assets.add_svg(&assets.load_file("icons/down_arrow.svg").unwrap(), quality));
-        icons.insert("delete", assets.add_svg(&assets.load_file("icons/delete.svg").unwrap(), quality));
-        icons.insert("door", assets.add_svg(&assets.load_file("icons/door.svg").unwrap(), quality));
-        icons.insert("down", assets.add_svg(&assets.load_file("icons/down.svg").unwrap(), quality));
-        icons.insert("edit", assets.add_svg(&assets.load_file("icons/edit.svg").unwrap(), quality));
-        icons.insert("emoji", assets.add_svg(&assets.load_file("icons/emoji.svg").unwrap(), quality));
-        icons.insert("error", assets.add_svg(&assets.load_file("icons/error.svg").unwrap(), quality));
-        icons.insert("explore", assets.add_svg(&assets.load_file("icons/explore.svg").unwrap(), quality));
-        icons.insert("facebook", assets.add_svg(&assets.load_file("icons/facebook.svg").unwrap(), quality));
-        icons.insert("forward", assets.add_svg(&assets.load_file("icons/forward.svg").unwrap(), quality));
-        icons.insert("gif", assets.add_svg(&assets.load_file("icons/gif.svg").unwrap(), quality));
-        icons.insert("group", assets.add_svg(&assets.load_file("icons/group.svg").unwrap(), quality));
-        icons.insert("heart", assets.add_svg(&assets.load_file("icons/heart.svg").unwrap(), quality));
-        icons.insert("home", assets.add_svg(&assets.load_file("icons/home.svg").unwrap(), quality));
-        icons.insert("infinite", assets.add_svg(&assets.load_file("icons/infinite.svg").unwrap(), quality));
-        icons.insert("info", assets.add_svg(&assets.load_file("icons/info.svg").unwrap(), quality));
-        icons.insert("instagram", assets.add_svg(&assets.load_file("icons/instagram.svg").unwrap(), quality));
-        icons.insert("left", assets.add_svg(&assets.load_file("icons/left.svg").unwrap(), quality));
-        icons.insert("link", assets.add_svg(&assets.load_file("icons/link.svg").unwrap(), quality));
-        icons.insert("megaphone", assets.add_svg(&assets.load_file("icons/megaphone.svg").unwrap(), quality));
-        icons.insert("messages", assets.add_svg(&assets.load_file("icons/messages.svg").unwrap(), quality));
-        icons.insert("microphone", assets.add_svg(&assets.load_file("icons/microphone.svg").unwrap(), quality));
-        icons.insert("monitor", assets.add_svg(&assets.load_file("icons/monitor.svg").unwrap(), quality));
-        icons.insert("notification", assets.add_svg(&assets.load_file("icons/notification.svg").unwrap(), quality));
-        icons.insert("paste", assets.add_svg(&assets.load_file("icons/paste.svg").unwrap(), quality));
-        icons.insert("photos", assets.add_svg(&assets.load_file("icons/photos.svg").unwrap(), quality));
-        icons.insert("play_store", assets.add_svg(&assets.load_file("icons/play_store.svg").unwrap(), quality));
-        icons.insert("profile", assets.add_svg(&assets.load_file("icons/profile.svg").unwrap(), quality));
-        icons.insert("qr_code", assets.add_svg(&assets.load_file("icons/qr_code.svg").unwrap(), quality));
-        icons.insert("radio_filled", assets.add_svg(&assets.load_file("icons/radio_filled.svg").unwrap(), quality));
-        icons.insert("radio", assets.add_svg(&assets.load_file("icons/radio.svg").unwrap(), quality));
-        icons.insert("right", assets.add_svg(&assets.load_file("icons/right.svg").unwrap(), quality));
-        icons.insert("scan", assets.add_svg(&assets.load_file("icons/scan.svg").unwrap(), quality));
-        icons.insert("search", assets.add_svg(&assets.load_file("icons/search.svg").unwrap(), quality));
-        icons.insert("send", assets.add_svg(&assets.load_file("icons/send.svg").unwrap(), quality));
-        icons.insert("settings", assets.add_svg(&assets.load_file("icons/settings.svg").unwrap(), quality));
-        icons.insert("up", assets.add_svg(&assets.load_file("icons/up.svg").unwrap(), quality));
-        icons.insert("wallet", assets.add_svg(&assets.load_file("icons/wallet.svg").unwrap(), quality));
-        icons.insert("warning", assets.add_svg(&assets.load_file("icons/warning.svg").unwrap(), quality));
-        icons.insert("x", assets.add_svg(&assets.load_file("icons/x.svg").unwrap(), quality));
+        icons.insert("accounts", assets.add_svg(&assets.load_file("icons/accounts.svg").unwrap(), Self::QUALITY));
+        icons.insert("add", assets.add_svg(&assets.load_file("icons/add.svg").unwrap(), Self::QUALITY));
+        icons.insert("app_store", assets.add_svg(&assets.load_file("icons/app_store.svg").unwrap(), Self::QUALITY));
+        icons.insert("back", assets.add_svg(&assets.load_file("icons/back.svg").unwrap(), Self::QUALITY));
+        icons.insert("block", assets.add_svg(&assets.load_file("icons/block.svg").unwrap(), Self::QUALITY));
+        icons.insert("unblock", assets.add_svg(&assets.load_file("icons/unblock.svg").unwrap(), Self::QUALITY));
+        icons.insert("boot", assets.add_svg(&assets.load_file("icons/boot.svg").unwrap(), Self::QUALITY));
+        icons.insert("unboot", assets.add_svg(&assets.load_file("icons/unboot.svg").unwrap(), Self::QUALITY));
+        icons.insert("backspace", assets.add_svg(&assets.load_file("icons/backspace.svg").unwrap(), Self::QUALITY));
+        icons.insert("bitcoin", assets.add_svg(&assets.load_file("icons/bitcoin.svg").unwrap(), Self::QUALITY));
+        icons.insert("camera", assets.add_svg(&assets.load_file("icons/camera.svg").unwrap(), Self::QUALITY));
+        icons.insert("cancel", assets.add_svg(&assets.load_file("icons/cancel.svg").unwrap(), Self::QUALITY));
+        icons.insert("capslock", assets.add_svg(&assets.load_file("icons/capslock.svg").unwrap(), Self::QUALITY));
+        icons.insert("capslock_on", assets.add_svg(&assets.load_file("icons/capslock_on.svg").unwrap(), Self::QUALITY));
+        icons.insert("checkmark", assets.add_svg(&assets.load_file("icons/checkmark.svg").unwrap(), Self::QUALITY));
+        icons.insert("close", assets.add_svg(&assets.load_file("icons/close.svg").unwrap(), Self::QUALITY));
+        icons.insert("copy", assets.add_svg(&assets.load_file("icons/copy.svg").unwrap(), Self::QUALITY));
+        icons.insert("credential", assets.add_svg(&assets.load_file("icons/credential.svg").unwrap(), Self::QUALITY));
+        icons.insert("down_arrow", assets.add_svg(&assets.load_file("icons/down_arrow.svg").unwrap(), Self::QUALITY));
+        icons.insert("delete", assets.add_svg(&assets.load_file("icons/delete.svg").unwrap(), Self::QUALITY));
+        icons.insert("door", assets.add_svg(&assets.load_file("icons/door.svg").unwrap(), Self::QUALITY));
+        icons.insert("down", assets.add_svg(&assets.load_file("icons/down.svg").unwrap(), Self::QUALITY));
+        icons.insert("edit", assets.add_svg(&assets.load_file("icons/edit.svg").unwrap(), Self::QUALITY));
+        icons.insert("emoji", assets.add_svg(&assets.load_file("icons/emoji.svg").unwrap(), Self::QUALITY));
+        icons.insert("error", assets.add_svg(&assets.load_file("icons/error.svg").unwrap(), Self::QUALITY));
+        icons.insert("explore", assets.add_svg(&assets.load_file("icons/explore.svg").unwrap(), Self::QUALITY));
+        icons.insert("facebook", assets.add_svg(&assets.load_file("icons/facebook.svg").unwrap(), Self::QUALITY));
+        icons.insert("forward", assets.add_svg(&assets.load_file("icons/forward.svg").unwrap(), Self::QUALITY));
+        icons.insert("gif", assets.add_svg(&assets.load_file("icons/gif.svg").unwrap(), Self::QUALITY));
+        icons.insert("group", assets.add_svg(&assets.load_file("icons/group.svg").unwrap(), Self::QUALITY));
+        icons.insert("heart", assets.add_svg(&assets.load_file("icons/heart.svg").unwrap(), Self::QUALITY));
+        icons.insert("home", assets.add_svg(&assets.load_file("icons/home.svg").unwrap(), Self::QUALITY));
+        icons.insert("infinite", assets.add_svg(&assets.load_file("icons/infinite.svg").unwrap(), Self::QUALITY));
+        icons.insert("info", assets.add_svg(&assets.load_file("icons/info.svg").unwrap(), Self::QUALITY));
+        icons.insert("instagram", assets.add_svg(&assets.load_file("icons/instagram.svg").unwrap(), Self::QUALITY));
+        icons.insert("left", assets.add_svg(&assets.load_file("icons/left.svg").unwrap(), Self::QUALITY));
+        icons.insert("link", assets.add_svg(&assets.load_file("icons/link.svg").unwrap(), Self::QUALITY));
+        icons.insert("megaphone", assets.add_svg(&assets.load_file("icons/megaphone.svg").unwrap(), Self::QUALITY));
+        icons.insert("messages", assets.add_svg(&assets.load_file("icons/messages.svg").unwrap(), Self::QUALITY));
+        icons.insert("microphone", assets.add_svg(&assets.load_file("icons/microphone.svg").unwrap(), Self::QUALITY));
+        icons.insert("monitor", assets.add_svg(&assets.load_file("icons/monitor.svg").unwrap(), Self::QUALITY));
+        icons.insert("notification", assets.add_svg(&assets.load_file("icons/notification.svg").unwrap(), Self::QUALITY));
+        icons.insert("paste", assets.add_svg(&assets.load_file("icons/paste.svg").unwrap(), Self::QUALITY));
+        icons.insert("photos", assets.add_svg(&assets.load_file("icons/photos.svg").unwrap(), Self::QUALITY));
+        icons.insert("play_store", assets.add_svg(&assets.load_file("icons/play_store.svg").unwrap(), Self::QUALITY));
+        icons.insert("profile", assets.add_svg(&assets.load_file("icons/profile.svg").unwrap(), Self::QUALITY));
+        icons.insert("qr_code", assets.add_svg(&assets.load_file("icons/qr_code.svg").unwrap(), Self::QUALITY));
+        icons.insert("radio_filled", assets.add_svg(&assets.load_file("icons/radio_filled.svg").unwrap(), Self::QUALITY));
+        icons.insert("radio", assets.add_svg(&assets.load_file("icons/radio.svg").unwrap(), Self::QUALITY));
+        icons.insert("right", assets.add_svg(&assets.load_file("icons/right.svg").unwrap(), Self::QUALITY));
+        icons.insert("scan", assets.add_svg(&assets.load_file("icons/scan.svg").unwrap(), Self::QUALITY));
+        icons.insert("search", assets.add_svg(&assets.load_file("icons/search.svg").unwrap(), Self::QUALITY));
+        icons.insert("send", assets.add_svg(&assets.load_file("icons/send.svg").unwrap(), Self::QUALITY));
+        icons.insert("settings", assets.add_svg(&assets.load_file("icons/settings.svg").unwrap(), Self::QUALITY));
+        icons.insert("up", assets.add_svg(&assets.load_file("icons/up.svg").unwrap(), Self::QUALITY));
+        icons.insert("wallet", assets.add_svg(&assets.load_file("icons/wallet.svg").unwrap(), Self::QUALITY));
+        icons.insert("warning", assets.add_svg(&assets.load_file("icons/warning.svg").unwrap(), Self::QUALITY));
+        icons.insert("x", assets.add_svg(&assets.load_file("icons/x.svg").unwrap(), Self::QUALITY));
 
-        // Return the loaded icons inside the `IconResources` struct
         Self(icons)
     }
 
-    /// Retrieves an icon by its name.
-    ///
-    /// # Arguments
-    ///
-    /// * `name` - The name of the icon to retrieve. Must match the name used when the icon was added.
-    ///
-    /// # Returns
-    ///
-    /// The corresponding `resources::Image` for the requested icon. Panics if the icon is not found.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the icon with the specified name does not exist in the collection.
     pub fn get(&self, name: &'static str) -> resources::Image {
         self.0.get(name).unwrap_or_else(|| panic!("Could not find icon {:?}", name)).clone()
     }
 
-    /// Adds a new icon to the collection.
-    ///
-    /// This method inserts a new icon into the `IconResources` collection. If an icon with the same
-    /// name already exists, it will not be added again.
-    ///
-    /// # Arguments
-    ///
-    /// * `icon_name` - The name of the new icon.
-    /// * `icon` - The image resource to associate with the icon name.
-    pub fn add_icon(&mut self, icon_name: &'static str, icon: resources::Image) {
-        if let std::collections::hash_map::Entry::Vacant(e) = self.0.entry(icon_name) {
-            e.insert(icon);
-        } else {
-            println!("add_icon(): Icon with name {:?} already exists. Use 'set_icon()' instead.", icon_name);
-        }
+    pub fn insert(&mut self, ctx: &mut Context, icon_name: &'static str) {
+        let path = format!("icons/{}.svg", icon_name);
+        let svg = &ctx.assets.load_file(&path).unwrap();
+        let icon = ctx.assets.add_svg(svg, Self::QUALITY);
+        self.0.insert(icon_name, icon);
     }
 
-    /// Sets an existing icon with a new image.
-    ///
-    /// This method replaces the existing image for the specified icon name.
-    ///
-    /// # Arguments
-    ///
-    /// * `icon_name` - The name of the icon to replace.
-    /// * `icon` - The new image resource to associate with the icon name.
-    pub fn set_icon(&mut self, icon_name: &'static str, icon: resources::Image) {
-        if let Some(existing) = self.0.get_mut(&icon_name) {
-            *existing = icon; 
-        } else {
-            println!("set_icon(): Icon with name {:?} doesn't exist. Use 'add_icon()' instead.", icon_name);
-        }
-    }
+    pub fn all(&self) -> HashMap<&'static str, resources::Image> {self.0.clone()}
 }
