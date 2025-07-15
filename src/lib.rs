@@ -7,7 +7,6 @@ use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
 pub use maverick_os::hardware::Context as HardwareContext;
 use maverick_os::runtime::{Services, ServiceList};
-use maverick_os::hardware::Notifications;
 
 pub use maverick_os::hardware;
 pub use maverick_os::runtime;
@@ -148,6 +147,7 @@ impl Context {
     }
 
     pub fn trigger_event(&mut self, event: impl Event) {
+        println!("Event triggered {:?}", event);
         self.events.push_back(Box::new(event));
     }
 
@@ -213,8 +213,7 @@ pub struct PelicanEngine<A: Application> {
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
     async fn new(ctx: &mut maverick_os::Context) -> Self {
-        #[cfg(target_os = "ios")]
-        Notifications::register();
+        ctx.hardware.register_notifs();
         let size = ctx.window.size;
         let (canvas, size) = Canvas::new(ctx.window.handle.clone(), size.0, size.1).await;
         let scale = Scale(ctx.window.scale_factor);
@@ -262,6 +261,11 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                 Lifetime::Close => {},
                 Lifetime::Draw => {//Size before events because the events are given between
                                    //resizing
+                    let result = self.event_handler.on_input(&self.scale, maverick_os::window::Input::Tick);
+                    if let Some(event) = result {
+                        println!("Event was {:?}", event);
+                        self.context.events.push_back(event);
+                    }
                     self.application.event(&mut self.context, self.sized_app.clone(), Box::new(TickEvent));
 
                     while let Some(event) = self.context.events.pop_front() {
