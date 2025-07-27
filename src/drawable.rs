@@ -26,6 +26,7 @@ pub trait Drawable: _Drawable + Debug + Any {
     fn request_size(&self, ctx: &mut Context) -> SizeRequest;
     fn name(&self) -> String;
 
+    fn into_any(self: Box<Self>) -> Box<dyn Any>;
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
@@ -33,6 +34,8 @@ pub trait Drawable: _Drawable + Debug + Any {
 impl<D: _Drawable + Debug + Any> Drawable for D {
     fn request_size(&self, ctx: &mut Context) -> SizeRequest {_Drawable::request_size(self, ctx).0}
     fn name(&self) -> String {_Drawable::name(self)}
+
+    fn into_any(self: Box<Self>) -> Box<dyn Any> { self }
     fn as_any(&self) -> &dyn Any { self }
     fn as_any_mut(&mut self) -> &mut dyn Any { self }
 }
