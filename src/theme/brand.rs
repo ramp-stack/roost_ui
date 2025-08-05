@@ -60,7 +60,7 @@ impl BrandResources {
 }
 
 #[derive(Clone, Debug)]
-pub struct Illustrations(HashMap<String, resources::Image>);
+pub struct Illustrations(pub HashMap<String, resources::Image>);
 
 impl Illustrations {
     pub const QUALITY: f32 = 8.0;
@@ -81,7 +81,12 @@ impl Illustrations {
         self.0.get(name).map(|n| n.clone())
     }
 
+    pub fn remove(&mut self, name: &str)  {
+        self.0.remove(name);
+    }
+
     pub fn insert(&mut self, ctx: &mut Context, name: &str, path: &str) {
+        println!("Adding {:?} by name {:?}", path, name);
         let mut illustration: Option<resources::Image> = None;
         if path.ends_with(".png") { illustration = Some(ctx.assets.add_image(image::load_from_memory(&ctx.assets.load_file(path).unwrap()).unwrap().into()))}
         if path.ends_with(".svg") { illustration = Some(ctx.assets.add_svg(&ctx.assets.load_file(path).unwrap(), 2.0)) }

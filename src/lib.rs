@@ -67,6 +67,8 @@ impl Assets {
         } 
     }
 
+    pub fn dirs(&self) -> &Vec<Dir<'static>> {&self.dirs}
+
     pub fn add_font(&mut self, font: &[u8]) -> resources::Font {self.atlas.add_font(font).unwrap()}
     pub fn add_image(&mut self, image: image::RgbaImage) -> resources::Image {self.atlas.add_image(image)}
     pub fn add_svg(&mut self, svg: &[u8], scale: f32) -> resources::Image {

@@ -101,6 +101,7 @@ impl IconResources {
         icons.insert("credential", assets.add_svg(&assets.load_file("icons/credential.svg").unwrap(), Self::QUALITY));
         icons.insert("down_arrow", assets.add_svg(&assets.load_file("icons/down_arrow.svg").unwrap(), Self::QUALITY));
         icons.insert("delete", assets.add_svg(&assets.load_file("icons/delete.svg").unwrap(), Self::QUALITY));
+        icons.insert("discord", assets.add_svg(&assets.load_file("icons/discord.svg").unwrap(), Self::QUALITY));
         icons.insert("door", assets.add_svg(&assets.load_file("icons/door.svg").unwrap(), Self::QUALITY));
         icons.insert("down", assets.add_svg(&assets.load_file("icons/down.svg").unwrap(), Self::QUALITY));
         icons.insert("edit", assets.add_svg(&assets.load_file("icons/edit.svg").unwrap(), Self::QUALITY));
