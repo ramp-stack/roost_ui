@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::any::TypeId;
 use std::sync::Arc;
+use std::time::Instant;
 
 use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 
@@ -210,7 +211,7 @@ pub struct PelicanEngine<A: Application> {
     sized_app: SizedBranch,
     application: Box<dyn Drawable>,
     event_handler: EventHandler,
-    items: Vec<(Area, CanvasItem)>
+    items: Vec<(Area, CanvasItem)>,
 }
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
@@ -263,6 +264,7 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                 Lifetime::Close => {},
                 Lifetime::Draw => {//Size before events because the events are given between
                                    //resizing
+
                     let result = self.event_handler.on_input(&self.scale, maverick_os::window::Input::Tick);
                     if let Some(event) = result {
                         println!("Event was {:?}", event);

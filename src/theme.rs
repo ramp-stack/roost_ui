@@ -8,12 +8,15 @@ pub mod icons;
 pub use icons::*;
 pub mod brand;
 pub use brand::*;
+pub mod layout;
+pub use layout::*;
 
 pub struct Theme {
     pub colors: ColorResources,
     pub fonts: FontResources,
     pub icons: IconResources,
     pub brand: BrandResources,
+    pub layout: LayoutResources,
 }
 
 impl Theme {
@@ -23,6 +26,7 @@ impl Theme {
             fonts: FontResources::default(ctx),
             icons: IconResources::default(ctx),
             brand: BrandResources::default(ctx),
+            layout: LayoutResources::default(),
         }
     }
 
@@ -31,7 +35,8 @@ impl Theme {
         fonts: FontResources, 
         icons: IconResources,
         brand: BrandResources,
+        layout: LayoutResources,
     ) -> Self { 
-        Theme { colors, fonts, icons, brand } 
+        Theme { colors, fonts, icons, brand, layout } 
     }
 }

@@ -194,16 +194,17 @@ impl EventHandler {
                     }
                     TouchPhase::Moved => {
                         self.scroll.and_then(|(prev_x, prev_y)| {
+                            println!("SCROLL EVENT DELTA {:?}", delta);
                             let pos = match delta {
                                 MouseScrollDelta::LineDelta(x, y) => (x.signum(), y.signum()),
                                 MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                             };
 
-                            (pos.0.abs() > 0.01 || pos.1.abs() > 0.01).then(|| {
-                                let scroll_x = prev_x + -pos.0 * 0.2;
-                                let scroll_y = prev_y + -pos.1 * 0.2;
-                                Box::new(MouseEvent{position: Some(self.mouse), state: MouseState::Scroll(scroll_x, scroll_y)}) as Box<dyn Event>
-                            })
+                            let scroll_x = prev_x + (-pos.0 * 0.2);
+                            let scroll_y = prev_y + (-pos.1 * 0.2);
+
+                            println!("scroll_x {:?}, scroll_y {:?}", scroll_x, scroll_y);
+                            Some(Box::new(MouseEvent{position: Some(self.mouse), state: MouseState::Scroll(scroll_x, scroll_y)}) as Box<dyn Event>)
                         })
                     },
                     // TouchPhase::Ended => None,
