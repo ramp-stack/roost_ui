@@ -23,19 +23,7 @@ pub struct ColorResources {
 }
 
 impl ColorResources {
-    /// Creates a new `ColorResources` instance with custom color values.
-    ///
-    /// # Parameters
-    /// - `background`: The background color for the UI.
-    /// - `outline`: The outline color for UI elements.
-    /// - `status`: The status colors (success, warning, danger).
-    /// - `text`: The text colors (heading, primary, secondary, danger).
-    /// - `brand`: The brand-specific colors.
-    /// - `shades`: The shades for the UI (black, white, lighten, darken, etc.).
-    /// - `button`: The button colors in various states.
-    ///
-    /// # Returns
-    /// A `ColorResources` struct with the provided colors.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         background: BackgroundColor,
         outline: OutlineColor,

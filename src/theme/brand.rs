@@ -33,6 +33,7 @@ impl BrandResources {
         }
     }
 
+    // TODO: Redo all this customization.
     pub fn set_wordmark(&mut self, ctx: &mut Context, path: &'static str) {
         let mut mark: Option<resources::Image> = None;
         if path.ends_with(".png") { mark = Some(ctx.assets.add_image(image::load_from_memory(&ctx.assets.load_file(path).unwrap()).unwrap().into()))}
@@ -78,7 +79,7 @@ impl Illustrations {
     }
 
     pub fn get(&self, name: &str) -> Option<resources::Image> {
-        self.0.get(name).map(|n| n.clone())
+        self.0.get(name).cloned()
     }
 
     pub fn remove(&mut self, name: &str)  {
@@ -86,7 +87,6 @@ impl Illustrations {
     }
 
     pub fn insert(&mut self, ctx: &mut Context, name: &str, path: &str) {
-        println!("Adding {:?} by name {:?}", path, name);
         let mut illustration: Option<resources::Image> = None;
         if path.ends_with(".png") { illustration = Some(ctx.assets.add_image(image::load_from_memory(&ctx.assets.load_file(path).unwrap()).unwrap().into()))}
         if path.ends_with(".svg") { illustration = Some(ctx.assets.add_svg(&ctx.assets.load_file(path).unwrap(), 2.0)) }

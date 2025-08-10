@@ -145,11 +145,12 @@ impl IconResources {
     }
 
     pub fn get(&self, name: &'static str) -> resources::Image {
-        self.0.get(name).unwrap_or_else(|| panic!("Could not find icon {:?}", name)).clone()
+        //TODO: Replace this panic with a default icon.
+        self.0.get(name).unwrap_or_else(|| panic!("Could not find icon {name:?}")).clone()
     }
 
     pub fn insert(&mut self, ctx: &mut Context, icon_name: &'static str) {
-        let path = format!("icons/{}.svg", icon_name);
+        let path = format!("icons/{icon_name}.svg");
         let svg = &ctx.assets.load_file(&path).unwrap();
         let icon = ctx.assets.add_svg(svg, Self::QUALITY);
         self.0.insert(icon_name, icon);

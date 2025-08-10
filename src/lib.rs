@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::any::TypeId;
 use std::sync::Arc;
-use std::time::Instant;
 
 use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 
@@ -150,7 +149,6 @@ impl Context {
     }
 
     pub fn trigger_event(&mut self, event: impl Event) {
-        println!("Event triggered {:?}", event);
         self.events.push_back(Box::new(event));
     }
 
@@ -260,14 +258,13 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                     let size = (self.scale.logical(size.0 as f32), self.scale.logical(size.1 as f32));
                     self.screen = size;
                 },
-                Lifetime::Paused => {println!("     LIFETIME PAUSED");},
+                Lifetime::Paused => {},
                 Lifetime::Close => {},
                 Lifetime::Draw => {//Size before events because the events are given between
                                    //resizing
 
                     let result = self.event_handler.on_input(&self.scale, maverick_os::window::Input::Tick);
                     if let Some(event) = result {
-                        println!("Event was {:?}", event);
                         self.context.events.push_back(event);
                     }
                     self.application.event(&mut self.context, self.sized_app.clone(), Box::new(TickEvent));
