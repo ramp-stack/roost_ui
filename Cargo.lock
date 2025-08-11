@@ -63,7 +63,9 @@ dependencies = [
 
 [[package]]
 name = "air"
-version = "0.2.4"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f8a1c2c062d21e370cfb644178f35e6ff554f9d5981b88cb5dd6aa43d97cd79"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1883,7 +1885,9 @@ dependencies = [
 
 [[package]]
 name = "maverick_os"
-version = "0.1.5"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbbfc701ec0433acfca2f7c2b31263ca66b6a196278efc817cd170287f2655d1"
 dependencies = [
  "air",
  "android-activity",
@@ -2828,7 +2832,7 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pelican_ui"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "downcast-rs 2.0.1",
  "image 0.25.6",
@@ -2842,7 +2846,9 @@ dependencies = [
 
 [[package]]
 name = "pelican_ui_proc"
-version = "0.1.0"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4b7653eee7e4a68f7b7d1e239771e2f094f4f07dab025736369b8c6490e6eab"
 dependencies = [
  "proc-macro2 1.0.95",
  "quote 1.0.40",
@@ -4504,7 +4510,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu_canvas"
-version = "4.0.6"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb0c2da43105f97f4332a9c2d40047bc56dcb506358ec1e7fee6ec6c66b4be59"
 dependencies = [
  "bytemuck",
  "fast_image_resize",
