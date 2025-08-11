@@ -151,7 +151,7 @@ impl EventHandler {
                         self.time = self.hold.map(|h| h.elapsed());
 
                         let hold = self.hold.map(|start| start.elapsed()).unwrap_or_default();
-                        match (self.start_touch.unwrap().1 - position.1).abs() < 25.0 && hold < Duration::from_millis(600) {
+                        match self.start_touch.map(|l| (position.1 - l.1).abs() < 25.0).unwrap_or(false) && hold < Duration::from_millis(600) {
                             true => Some(MouseState::Released),
                             false => Some(MouseState::LongPressReleased)
                         }
