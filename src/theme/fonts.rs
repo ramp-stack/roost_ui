@@ -12,24 +12,11 @@ pub struct FontResources {
 
 impl FontResources {
     /// Creates a new `FontResources` instance with the specified fonts and font sizes.
-    ///
-    /// # Parameters
-    /// - `fonts`: The fonts used in the UI.
-    /// - `size`: The font sizes used in the UI.
-    ///
-    /// # Returns
-    /// A `FontResources` struct with the provided fonts and sizes.
     pub fn new(fonts: Fonts, size: FontSize) -> Self {
         Self { fonts, size }
     }
 
     /// Loads the default font resources using the Assets to load fonts.
-    ///
-    /// # Parameters
-    /// - `assets`: The [`Assets`] for accessing the app's theme.
-    ///
-    /// # Returns
-    /// A `FontResources` struct with default fonts and sizes.
     pub fn default(assets: &mut Assets) -> Self {
         FontResources {
             fonts: Fonts::default(assets),
@@ -55,16 +42,6 @@ pub struct Fonts {
 
 impl Fonts {
     /// Creates a new `Fonts` struct with the specified fonts.
-    ///
-    /// # Parameters
-    /// - `heading`: The font used for headings.
-    /// - `text`: The font used for regular text.
-    /// - `label`: The font used for labels.
-    /// - `keyboard`: The font used for keyboard elements.
-    /// - `emoji`: The font used for emoji characters.
-    ///
-    /// # Returns
-    /// A `Fonts` struct with the provided fonts.
     pub fn new(
         heading: resources::Font, 
         text: resources::Font, 
@@ -76,12 +53,6 @@ impl Fonts {
     }
 
     /// Loads the default fonts using the provided Assets.
-    ///
-    /// # Parameters
-    /// - `assets`: The [`Assets`] for accessing the app's theme.
-    ///
-    /// # Returns
-    /// A `Fonts` struct with default fonts loaded from the specified paths.
     pub fn default(assets: &mut Assets) -> Self {
         let bold = assets.load_font("fonts/outfit_bold.ttf").unwrap();
         let medium = assets.load_font("fonts/outfit_medium.ttf").unwrap();
@@ -103,9 +74,9 @@ impl Fonts {
 pub struct FontSize {
     /// The font size used for title text.
     pub title: f32,
-    /// The font size used for h1 (primary) headers.
+    /// The font size used for h1 headers.
     pub h1: f32,
-    /// The font size used for h2 (secondary) headers.
+    /// The font size used for h2 headers.
     pub h2: f32,
     /// The font size used for h3 headers.
     pub h3: f32,
@@ -129,9 +100,6 @@ pub struct FontSize {
 
 impl Default for FontSize {
     /// Returns the default font sizes used throughout the application.
-    ///
-    /// # Returns
-    /// A `FontSize` struct with default font sizes for various elements.
     fn default() -> Self {
         FontSize {
             title: 72.0,

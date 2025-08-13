@@ -5,76 +5,7 @@ use crate::Context;
 use std::collections::HashMap;
 
 /// A collection of icons used throughout the application.
-///
-/// This struct contains a set of icons that are loaded by the application at runtime.
-/// Icons can be accessed by their string name, and they are loaded from SVG files.
-/// The icons are loaded with a Self::QUALITY setting to ensure clarity across various screen
-/// resolutions.
-///
-/// ## Default Icons
-/// The following icons are included by default:
-/// 
-/// 1. `accounts` - An icon representing user accounts.
-/// 2. `add` - An icon for adding items or creating new entities.
-/// 3. `app_store` - An icon for app store functionality.
-/// 4. `back` - An icon representing the back action.
-/// 5. `block` - An icon representing blocking actions.
-/// 6. `unblock` - An icon representing unblocking actions.
-/// 7. `boot` - An icon representing booting user or user removal.
-/// 8. `unboot` - An icon representing unbooting user or user un-removal.
-/// 9. `back_arrow` - An icon for navigating backward.
-/// 10. `back_to` - Another variant of the back arrow icon.
-/// 11. `backspace` - An icon representing the backspace action.
-/// 12. `bitcoin` - An icon for Bitcoin features.
-/// 13. `camera` - An icon for camera functionalities.
-/// 14. `cancel` - An icon for canceling actions.
-/// 15. `capslock` - An icon representing the Caps Lock key.
-/// 16. `capslock_on` - An icon representing Caps Lock being active.
-/// 17. `checkmark` - An icon for indicating success or completion.
-/// 18. `close` - An icon for closing windows or dialogs.
-/// 19. `copy` - An icon representing copy action.
-/// 20. `credential` - An icon representing credentials.
-/// 21. `down_arrow` - An icon for downward navigation.
-/// 22. `delete` - An icon for deleting items.
-/// 23. `door` - An icon representing doors or entryways.
-/// 24. `down` - Another icon for downward navigation.
-/// 25. `edit` - An icon for editing actions.
-/// 26. `emoji` - An icon representing emojis.
-/// 27. `error` - An icon for error states.
-/// 28. `explore` - An icon for exploring or searching.
-/// 29. `facebook` - An icon for Facebook-related actions.
-/// 30. `forward` - An icon for forwarding actions.
-/// 31. `gif` - An icon for GIF-related content.
-/// 32. `group` - An icon for group-related features.
-/// 33. `heart` - An icon for liking or favoriting content.
-/// 34. `home` - An icon for navigating to the home screen.
-/// 35. `infinite` - An icon representing infinity or endless loops.
-/// 36. `info` - An icon for information-related features.
-/// 37. `instagram` - An icon for Instagram-related features.
-/// 38. `left` - An icon for leftward navigation.
-/// 39. `link` - An icon for linking or sharing content.
-/// 40. `megaphone` - An icon representing announcements or promotions.
-/// 41. `messages` - An icon for messaging or chat functions.
-/// 42. `microphone` - An icon for microphone-related actions.
-/// 43. `monitor` - An icon for monitor or display-related features.
-/// 44. `paste` - An icon representing the paste action.
-/// 45. `photos` - An icon for photos or image-related actions.
-/// 46. `play_store` - An icon for the Play Store or app downloads.
-/// 47. `profile` - An icon for profile or user-related actions.
-/// 48. `qr_code` - An icon for QR code scanning.
-/// 49. `radio_filled` - An icon representing a filled radio button or state.
-/// 50. `radio` - An icon for a radio button or selection state.
-/// 51. `right` - An icon for rightward navigation.
-/// 52. `scan` - An icon for scanning actions, typically used for QR codes or barcodes.
-/// 53. `search` - An icon for searching functionality.
-/// 54. `send` - An icon for sending messages or data.
-/// 55. `settings` - An icon for accessing settings or preferences.
-/// 56. `up` - An icon for upward navigation.
-/// 57. `wallet` - An icon representing wallet or financial features.
-/// 58. `warning` - An icon indicating a warning or cautionary state.
-/// 59. `x` - An icon for x.com/Twitter-related features.
 pub struct IconResources(HashMap<&'static str, resources::Image>);
-
 
 impl IconResources {
     pub const QUALITY: f32 = 8.0;

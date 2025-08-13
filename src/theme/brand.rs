@@ -69,7 +69,7 @@ impl Illustrations {
     pub fn default(assets: &mut Assets) -> Self {
         let mut illustrations = HashMap::new();
 
-        illustrations.insert("error".to_string(), assets.add_svg(&assets.load_file("brand/illustrations/error.svg").unwrap(), Self::QUALITY));
+        illustrations.insert("error".to_string(), assets.add_svg(&assets.load_file("brand/std_logomark.svg").unwrap(), Self::QUALITY));
         illustrations.insert("dodo".to_string(), assets.add_svg(&assets.load_file("brand/illustrations/dodo.svg").unwrap(), Self::QUALITY));
         illustrations.insert("hummingbird".to_string(), assets.add_svg(&assets.load_file("brand/illustrations/hummingbird.svg").unwrap(), Self::QUALITY));
         illustrations.insert("toucan".to_string(), assets.add_svg(&assets.load_file("brand/illustrations/toucan.svg").unwrap(), Self::QUALITY));
