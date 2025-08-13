@@ -1886,8 +1886,6 @@ dependencies = [
 [[package]]
 name = "maverick_os"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbbfc701ec0433acfca2f7c2b31263ca66b6a196278efc817cd170287f2655d1"
 dependencies = [
  "air",
  "android-activity",

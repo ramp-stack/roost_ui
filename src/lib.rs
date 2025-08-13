@@ -48,6 +48,8 @@ pub trait Plugin: Downcast {
 }
 impl_downcast!(Plugin); 
 
+/// This structure stores all the assets required by your project, 
+/// including images, fonts, and other resources.
 pub struct Assets {
     dirs: Vec<Dir<'static>>,
     atlas: Atlas,
@@ -67,10 +69,13 @@ impl Assets {
         } 
     }
 
+    /// Returns a reference to a vector containing all included directories.
     pub fn dirs(&self) -> &Vec<Dir<'static>> {&self.dirs}
-
+    /// Adds a font to the atlas from the provided byte slice and returns the loaded [`resources::Font`] resource.
     pub fn add_font(&mut self, font: &[u8]) -> resources::Font {self.atlas.add_font(font).unwrap()}
+    /// Adds an image to the atlas from the provided [`image::RgbaImage`] and returns the loaded [`resources::Image`] resource.
     pub fn add_image(&mut self, image: image::RgbaImage) -> resources::Image {self.atlas.add_image(image)}
+    /// Adds a svg image to the atlas from the provided byte slice and scale factor and returns the loaded [`resources::Image`] resource.
     pub fn add_svg(&mut self, svg: &[u8], scale: f32) -> resources::Image {
         let svg = std::str::from_utf8(svg).unwrap();
         let svg = nsvg::parse_str(svg, nsvg::Units::Pixel, 96.0).unwrap();
@@ -79,16 +84,19 @@ impl Assets {
         self.atlas.add_image(image::RgbaImage::from_raw(size.0, size.1, rgba.into_raw()).unwrap())
     }
 
+    /// Loads a font from the given file path and returns an [`Option`] containing the [`resources::Font`] if successful.
     pub fn load_font(&mut self, file: &str) -> Option<resources::Font> {
         self.load_file(file).map(|b| self.add_font(&b))
     }
 
+    /// Loads an image from the given file path and returns an [`Option`] containing the [`resources::Image`] if successful.
     pub fn load_image(&mut self, file: &str) -> Option<resources::Image> {
         self.load_file(file).map(|b|
             self.add_image(image::load_from_memory(&b).unwrap().into())
         )
     }
 
+    /// Loads the contents of the specified file from the search directories, returning its bytes if found.
     pub fn load_file(&self, file: &str) -> Option<Vec<u8>> {
         self.dirs.iter().find_map(|dir|
             dir.find(file).ok().and_then(|mut f|
@@ -103,6 +111,7 @@ impl Assets {
         )
     }
 
+    /// Adds a directory to the list of asset search paths.
     pub fn include_assets(&mut self, dir: Dir<'static>) {
         self.dirs.push(dir);
     }
@@ -123,6 +132,7 @@ impl<'a, P: Plugin> Drop for PluginGuard<'a, P> {
     }
 }
 
+/// Holds the main app context, including hardware, runtime, assets, theme, plugins, events, and state.
 pub struct Context {
     pub hardware: HardwareContext,
     pub runtime: runtime::Context,
@@ -134,6 +144,7 @@ pub struct Context {
 }
 
 impl Context {
+    /// Creates a new `Context` instance and loads the default Pelican UI assets.
     pub fn new(hardware: HardwareContext, runtime: runtime::Context, state: Option<State>) -> Self {
         let mut assets = Assets::new();
         assets.include_assets(include_assets!("./resources"));
@@ -148,6 +159,7 @@ impl Context {
         }
     }
 
+    /// Adds an [`Event`] to the context's event queue to be triggered.
     pub fn trigger_event(&mut self, event: impl Event) {
         self.events.push_back(Box::new(event));
     }
@@ -158,6 +170,7 @@ impl Context {
             .downcast().ok().unwrap()), self)
     }
 
+    /// Returns a mutable reference to the [`State`]
     pub fn state(&mut self) -> &mut State {
         self.state.as_mut().unwrap()
     }

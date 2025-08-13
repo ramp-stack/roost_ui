@@ -11,6 +11,9 @@ pub use brand::*;
 pub mod layout;
 pub use layout::*;
 
+/// Contains all visual and layout resources for the 
+/// application's theme, including colors, fonts, icons, 
+/// branding, and layout.
 pub struct Theme {
     pub colors: ColorResources,
     pub fonts: FontResources,
@@ -30,6 +33,7 @@ impl Theme {
         }
     }
 
+    /// Creates a new instance of the Theme object.
     pub fn new(
         colors: ColorResources, 
         fonts: FontResources, 

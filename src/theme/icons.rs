@@ -125,6 +125,7 @@ impl IconResources {
         icons.insert("monitor", assets.add_svg(&assets.load_file("icons/monitor.svg").unwrap(), Self::QUALITY));
         icons.insert("notification", assets.add_svg(&assets.load_file("icons/notification.svg").unwrap(), Self::QUALITY));
         icons.insert("paste", assets.add_svg(&assets.load_file("icons/paste.svg").unwrap(), Self::QUALITY));
+        icons.insert("pelican_ui", assets.add_svg(&assets.load_file("icons/pelican_ui.svg").unwrap(), Self::QUALITY));
         icons.insert("photos", assets.add_svg(&assets.load_file("icons/photos.svg").unwrap(), Self::QUALITY));
         icons.insert("play_store", assets.add_svg(&assets.load_file("icons/play_store.svg").unwrap(), Self::QUALITY));
         icons.insert("profile", assets.add_svg(&assets.load_file("icons/profile.svg").unwrap(), Self::QUALITY));
@@ -145,8 +146,7 @@ impl IconResources {
     }
 
     pub fn get(&self, name: &'static str) -> resources::Image {
-        //TODO: Replace this panic with a default icon.
-        self.0.get(name).unwrap_or_else(|| panic!("Could not find icon {name:?}")).clone()
+        self.0.get(name).unwrap_or_else(|| self.0.get("pelican_ui").unwrap()).clone()
     }
 
     pub fn insert(&mut self, ctx: &mut Context, icon_name: &'static str) {
