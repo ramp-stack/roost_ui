@@ -7,9 +7,8 @@ description = "Pelican UI"
 documentation = "https://docs.rs/pelican_ui"
 repository = "https://github.com/ramp-stack/pelican_ui"
 
-
 [dependencies]
-maverick_os = "0.1.7"
+maverick_os = {path="../maverick_os"} #"0.1.7"
 downcast-rs = "2.0.1"
 image = "0.25.6"
 nsvg = "0.5.1"

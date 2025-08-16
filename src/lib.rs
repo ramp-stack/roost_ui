@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/pelican_ui_std/main/logo.png")]
+
 use std::collections::BTreeMap;
 use std::any::TypeId;
 use std::sync::Arc;
@@ -37,7 +39,7 @@ pub mod resources {
 }
 
 pub mod theme;
-pub use theme::{Theme, ColorResources, FontResources, IconResources, BrandResources};
+pub use theme::*;
 
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
 
@@ -48,7 +50,7 @@ pub trait Plugin: Downcast {
 }
 impl_downcast!(Plugin); 
 
-/// This structure stores all the assets required by your project, 
+/// `Assets` stores all the assets required by your project, 
 /// including images, fonts, and other resources.
 pub struct Assets {
     dirs: Vec<Dir<'static>>,
@@ -132,7 +134,7 @@ impl<'a, P: Plugin> Drop for PluginGuard<'a, P> {
     }
 }
 
-/// Holds the main app context, including hardware, runtime, assets, theme, plugins, events, and state.
+/// `Context` holds the app context, including hardware, runtime, assets, theme, plugins, events, and state.
 pub struct Context {
     pub hardware: HardwareContext,
     pub runtime: runtime::Context,
