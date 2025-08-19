@@ -7,5 +7,5 @@ Full documentation is available at **https://docs.rs/pelican-ui**
 
 # Getting Started
 
-Download the starter template here: **https://github.com/EllaCouch20/ramp-template**
+Download the starter template here: **https://github.com/EllaCouch20/ramp_template**
 
