@@ -4,21 +4,21 @@ use std::collections::HashMap;
 /// Represents a collection of color resources used throughout the UI, including background, text, button, and status colors.
 #[derive(Clone, Debug, Default)]
 pub struct ColorResources {
-    /// Defines the background colors of the UI.
+    /// Defines the background colors.
     pub background: BackgroundColor,
-    /// Defines the outline colors of UI elements.
+    /// Defines the outline colors.
     pub outline: OutlineColor,
-    /// Defines the colors representing various status indicators (success, warning, danger).
+    /// Defines the colors representing various status indicators.
     pub status: StatusColor,
-    /// Defines the colors for various text elements (headings, primary text, secondary text, danger text).
+    /// Defines the colors for various text elements.
     pub text: TextColor,
     /// Defines the colors for buttons in various states (default, disabled, hover, etc.).
     pub button: ButtonColors,
-    /// Defines brand-specific colors for the application (primary and secondary).
+    /// Defines brand-specific colors.
     pub brand: BrandColor,
-    /// Defines various shades used for UI elements (black, white, light/dark variants, transparency).
+    /// Defines various color shades. (Black, White, Transparent, etc.)
     pub shades: ShadesColor,
-
+    /// Colors used for illustrations and other visual assets.
     pub illustration: IllustrationColors,
 }
 
@@ -30,15 +30,14 @@ impl ColorResources {
         status: StatusColor,
         text: TextColor,
         brand: BrandColor,
-        shades: ShadesColor,
         button: ButtonColors,
         illustration: IllustrationColors,
     ) -> Self {
-        ColorResources { background, outline, status, text, brand, shades, button, illustration }
+        ColorResources { background, outline, status, text, brand, shades: ShadesColor::default(), button, illustration }
     }
 }
 
-/// Defines various shades of colors, including black, white, lighten/darken variants, and transparency.
+/// Defines various shades used for UI elements.
 #[derive(Copy, Clone, Debug)]
 pub struct ShadesColor {
     /// Pure black color.
@@ -71,12 +70,10 @@ impl Default for ShadesColor {
     }
 }
 
-/// Defines the background colors used throughout the UI, including primary and secondary backgrounds.
+/// Defines the background colors.   
 #[derive(Copy, Clone, Debug)]
 pub struct BackgroundColor {
-    /// Primary background color for the UI.
     pub primary: Color,
-    /// Secondary background color for UI elements.
     pub secondary: Color,
 }
 
@@ -89,12 +86,12 @@ impl Default for BackgroundColor {
     }
 }
 
-/// Defines the brand colors, including primary and secondary colors used for branding elements.
+/// Defines the brand-specific colors.
 #[derive(Copy, Clone, Debug)]
 pub struct BrandColor {
-    /// Primary color for branding.
+    /// The brand's main color.
     pub primary: Color,
-    /// Secondary color for branding.
+    /// The brand's secondary color. (typically black or white)
     pub secondary: Color,
 }
 
@@ -107,12 +104,10 @@ impl Default for BrandColor {
     }
 }
 
-/// Defines the outline colors for various UI elements, such as borders or separators.
+/// Defines the outline colors.
 #[derive(Copy, Clone, Debug)]
 pub struct OutlineColor {
-    /// Primary outline color.
     pub primary: Color,
-    /// Secondary outline color.
     pub secondary: Color,
 }
 
@@ -125,14 +120,11 @@ impl Default for OutlineColor {
     }
 }
 
-/// Defines the colors used for different text elements in the UI.
+/// Defines the colors of text elements.
 #[derive(Copy, Clone, Debug)]
 pub struct TextColor {
-    /// Color used for headings in the UI.
     pub heading: Color,
-    /// Color used for primary text content.
     pub primary: Color,
-    /// Color used for secondary text content.
     pub secondary: Color,
 }
 
@@ -146,14 +138,11 @@ impl Default for TextColor {
     }
 }
 
-/// Defines status colors representing success, warning, and danger states in the UI.
+/// Defines the colors representing various status indicators.
 #[derive(Copy, Clone, Debug)]
 pub struct StatusColor {
-    /// Color used for success status indicators.
     pub success: Color,
-    /// Color used for warning status indicators.
     pub warning: Color,
-    /// Color used for danger status indicators.
     pub danger: Color,
 }
 

@@ -21,6 +21,10 @@ type Offset = (f32, f32);
 type Rect = (f32, f32, f32, f32);
 type Size = (f32, f32);
 
+/// A renderable element in the UI.
+///
+/// The `Drawable` trait is implemented by all visual elements
+/// such as shapes, text, and images.
 #[allow(private_bounds)]
 pub trait Drawable: _Drawable + Debug + Any {
     fn request_size(&self, ctx: &mut Context) -> SizeRequest;
@@ -63,11 +67,15 @@ impl _Drawable for Text {
 }
 
 
+/// A basic drawable shape with a fill color.
 #[derive(Clone, Copy, Debug)]
 pub struct Shape {
+    /// The geometric form of the shape (e.g., rectangle, circle).
     pub shape: ShapeType,
-    pub color: Color
+    /// The fill or stroke color of the shape.
+    pub color: Color,
 }
+
 impl _Drawable for Shape {
     fn request_size(&self, _ctx: &mut Context) -> RequestBranch {
         RequestBranch(SizeRequest::fixed(self.shape.size()), vec![])
@@ -79,11 +87,16 @@ impl _Drawable for Shape {
     }
 }
 
+/// A drawable image.
 #[derive(Clone, Debug)]
 pub struct Image {
+    /// The geometric bounds or clipping shape for the image.
     pub shape: ShapeType,
+    /// The image resource to be rendered.
     pub image: resources::Image,
-    pub color: Option<Color>
+    /// An optional color that will replace all opaque parts of the image.
+    /// This is usefull when recoloring svgs.
+    pub color: Option<Color>,
 }
 
 impl _Drawable for Image {
@@ -96,11 +109,20 @@ impl _Drawable for Image {
     }
 }
 
+/// A composable UI element with children.
+///
+/// `Component` represents higher-level UI building blocks. 
+/// Unlike simple `Drawable`s, components can contain other 
+/// drawables and define their own layout, rendering, and event handling.
 pub trait Component: Debug {
+    /// Returns mutable reference to child drawables.
     fn children_mut(&mut self) -> Vec<&mut dyn Drawable>;
+    /// Returns reference to child drawables.
     fn children(&self) -> Vec<&dyn Drawable>;
 
+    /// Compute layout needs based on children.
     fn request_size(&self, ctx: &mut Context, children: Vec<SizeRequest>) -> SizeRequest;
+    /// Position children and return their areas.
     fn build(&mut self, ctx: &mut Context, size: Size, children: Vec<SizeRequest>) -> Vec<Area>;
 }
 

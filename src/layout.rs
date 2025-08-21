@@ -109,10 +109,10 @@ pub(crate) trait Scaling {
 
     fn scale_shape(shape: Shape, scale: &Scale) -> Shape {
         match shape {
-            Shape::Ellipse(s, size) => Shape::Ellipse(scale.physical(s), Self::scale_size(size, scale)),
-            Shape::Rectangle(s, size) => Shape::Rectangle(scale.physical(s), Self::scale_size(size, scale)),
-            Shape::RoundedRectangle(s, size, r) => Shape::RoundedRectangle(
-                scale.physical(s), Self::scale_size(size, scale), scale.physical(r)
+            Shape::Ellipse(s, size, rot) => Shape::Ellipse(scale.physical(s), Self::scale_size(size, scale), rot),
+            Shape::Rectangle(s, size, rot) => Shape::Rectangle(scale.physical(s), Self::scale_size(size, scale), rot),
+            Shape::RoundedRectangle(s, size, r, rot) => Shape::RoundedRectangle(
+                scale.physical(s), Self::scale_size(size, scale), scale.physical(r), rot
             ),
         }
     }

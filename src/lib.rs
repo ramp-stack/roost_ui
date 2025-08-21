@@ -1,5 +1,18 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/pelican_ui_std/main/logo.png")]
 
+//! Pelican UI
+//!
+//! Pelican UI is a fast, cross-platform UI renderer and component system for building beautiful and consistent apps.
+//!
+//! Key features include:
+//! - **Theme system**: Easily customize colors, fonts, and more through a central [`Theme`] object.
+//! - **Simple components & layouts**: Build UIs quickly with a minimal and intuitive API.
+//! - **High performance**: Optimized for speed, making it suitable for both lightweight and complex applications.
+//! - **Cross-platform support**: Works seamlessly on desktop, web, and mobile platforms.
+//! - **Standard components**: Access ready-to-use components via the [`pelican_ui_std`](<https://docs.rs/crate/pelican_ui_std/latest>) crate built on top of Pelican UI.
+//!
+//! Check out the [website](http://ramp-stack.com/pelican_ui) for more information, the [Quick Start Guide](http://ramp-stack.com/pelican_ui/getting_started) to set up your first app, and join the [community](https://discord.gg/cTRaRbUZ) if you have questions or want to share ideas.
+
 use std::collections::BTreeMap;
 use std::any::TypeId;
 use std::sync::Arc;
@@ -38,8 +51,19 @@ pub mod resources {
     pub use wgpu_canvas::{Image, Font};
 }
 
-pub mod theme;
-pub use theme::*;
+mod theme;
+pub use theme::{
+    Theme,
+    ColorResources,
+    FontResources,
+    IconResources,
+    LayoutResources,
+    ButtonColorScheme,
+    BrandColor,
+    TextColor,
+    BackgroundColor,
+    ButtonColors,
+};
 
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
 
