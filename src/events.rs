@@ -38,6 +38,8 @@ pub enum MouseState {
     Moved, 
     /// The mouse button was released.
     Released,
+    /// The mouse was released after a long time.
+    ReleasedLong,
     /// The mouse was scrolled.
     /// 
     /// The first value is the horizontal scroll amount (x-axis),
@@ -191,9 +193,10 @@ impl EventHandler {
                         self.time = self.hold.map(|h| h.elapsed());
 
                         let hold = self.hold.map(|start| start.elapsed()).unwrap_or_default();
-                        (self.start_touch.map(|l| (position.1 - l.1).abs() < 25.0).unwrap_or(false) && hold < Duration::from_millis(600)).then_some( {
-                            MouseState::Released
-                        })
+                        match self.start_touch.map(|l| (position.1 - l.1).abs() < 25.0).unwrap_or(false) && hold < Duration::from_millis(600) {
+                            true => Some(MouseState::Released),
+                            false => Some(MouseState::ReleasedLong),
+                        }
                     },
                     TouchPhase::Moved => {
                         self.scroll.and_then(|(prev_x, prev_y)| {

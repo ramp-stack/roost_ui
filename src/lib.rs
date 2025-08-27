@@ -54,6 +54,7 @@ pub mod resources {
 mod theme;
 pub use theme::{
     Theme,
+    Illustrations,
     ColorResources,
     FontResources,
     IconResources,
@@ -63,6 +64,9 @@ pub use theme::{
     TextColor,
     BackgroundColor,
     ButtonColors,
+    OutlineColor,
+    IllustrationColors,
+    StatusColor,
 };
 
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
@@ -225,20 +229,66 @@ impl Context {
     // }
 }
 
+/// A trait for registering plugins.
+///
+/// Implementors should return a collection of plugins to be stored in the [`Context`].
+///
+/// # Example
+/// ```
+/// struct MyPlugin;
+/// impl Plugin for MyPlugin { /* ... */ }
+///
+/// struct MyApp;
+/// impl Plugins for MyApp {
+///     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>> {
+///         vec![Box::new(MyPlugin)]
+///     }
+/// }
+/// ```
 pub trait Plugins {
+    /// Returns a list of plugins for the application.
     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>>;
 }
 
+/// Allow [`Context`] to provide mutable access to the [`Atlas`].
 impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.assets.atlas}}
 
+/// The core application trait.
+///
+/// An `Application` provides services, registers plugins, and defines
+/// the entrypoint for creating the root [`Drawable`] of the app.
+///
+/// # Example
+/// ```
+/// struct MyApp;
+/// impl Services for MyApp {
+///     fn services() -> ServiceList { ServiceList::new() }
+/// }
+///
+/// impl Plugins for MyApp {
+///     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>> { vec![] }
+/// }
+///
+/// impl Application for MyApp {
+///     async fn new(ctx: &mut Context) -> Box<dyn Drawable> {
+///         Box::new(MyRootDrawable::new())
+///     }
+/// }
+/// ```
 pub trait Application: Services + Plugins {
     fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
 }
 
+/// Provide [`Services`] for [`PelicanEngine`] by deferring to the application type.
 impl<A: Application> Services for PelicanEngine<A> {
     fn services() -> ServiceList { A::services() }
 }
 
+
+/// The main engine type.
+///
+/// `PelicanEngine` wires together the [`Application`], windowing system,
+/// plugin management, drawing, and event handling.
 pub struct PelicanEngine<A: Application> {
     _p: std::marker::PhantomData<A>,
     scale: Scale,
@@ -252,6 +302,11 @@ pub struct PelicanEngine<A: Application> {
 }
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
+    /// Initializes the engine with the given MaverickOS context.
+    ///
+    /// - Creates a canvas bound to the OS window.
+    /// - Constructs an application via [`Application::new`].
+    /// - Registers plugins returned by [`Application::plugins`].
     async fn new(ctx: &mut maverick_os::Context) -> Self {
         ctx.hardware.register_notifs();
         let size = ctx.window.size;
@@ -338,6 +393,8 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
         context.state = self.context.state.take();
     }
 }
+
+
 
 
 #[macro_export]

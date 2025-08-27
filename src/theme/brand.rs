@@ -59,13 +59,29 @@ impl BrandResources {
         self.illustrations.insert(ctx, "error", path);
     }
 }
-
+ 
+/// Branding illustrations and images.
+///
+/// Store and display branding illustrations and images.
+///
+/// This is separate from [`icons`](crate::theme::IconResources)
+///
+///
+/// # Adding a New Illustration
+/// ```rust
+/// let theme = Theme::default();
+/// theme.brand.illustrations.insert(ctx, "fish_image", "fish_image.png");
+/// ```
+/// 
+/// - The first string is the name of the image you will reference it as.
+/// - The second string is the file path. Illustrations must be `.svg` or `.png` files located in `resources/brand/`.
 #[derive(Clone, Debug)]
 pub struct Illustrations(pub HashMap<String, resources::Image>);
 
 impl Illustrations {
     pub const QUALITY: f32 = 8.0;
 
+    /// Registers default illustrations.
     pub fn default(assets: &mut Assets) -> Self {
         let mut illustrations = HashMap::new();
 
@@ -78,14 +94,20 @@ impl Illustrations {
         Illustrations(illustrations)
     }
 
+    /// Get an illustration by it's name
     pub fn get(&self, name: &str) -> Option<resources::Image> {
         self.0.get(name).cloned()
     }
 
+    /// Remove an illustration by it's name.
     pub fn remove(&mut self, name: &str)  {
         self.0.remove(name);
     }
 
+    /// Insert an illustration.
+    ///
+    /// - The first string is the name of the image you will reference it as.
+    /// - The second string is the file path. Illustrations must be `.svg` or `.png` files located in `resources/brand/`.
     pub fn insert(&mut self, ctx: &mut Context, name: &str, path: &str) {
         let mut illustration: Option<resources::Image> = None;
         if path.ends_with(".png") { illustration = Some(ctx.assets.add_image(image::load_from_memory(&ctx.assets.load_file(path).unwrap()).unwrap().into()))}

@@ -7,45 +7,60 @@ pub struct Area {
     pub size: (f32, f32)
 }
 
-///Trait for layouts that determine the offset and allotted sizes of its children
+/// Trait for layouts that determine the offset and allotted sizes of its children
 pub trait Layout: std::fmt::Debug {
 
-    ///Given a list of children size requests calculate the size request for the total layout
+    /// Given a list of children size requests calculate the size request for the total layout
    fn request_size(&self, ctx: &mut Context, children: Vec<SizeRequest>) -> SizeRequest;
 
-    ///Given an allotted size and the list of chlidren size requests (which may respect the size request),
-    ///calculate the actual offsets and allotted sizes for its children
+    /// Given an allotted size and the list of chlidren size requests (which may respect the size request),
+    /// calculate the actual offsets and allotted sizes for its children
     fn build(&self, ctx: &mut Context, size: (f32, f32), children: Vec<SizeRequest>) -> Vec<Area>;
 }
 
+/// Structure used to designate space to a component or drawable.
+///
+/// A `SizeRequest` specifies the minimum and maximum dimensions that a
+/// component is able to occupy. Layout systems can use this
+/// information to determine how to allocate space during rendering.
 #[derive(Debug, Clone, Copy, Default, PartialEq, PartialOrd)]
 pub struct SizeRequest {
     min_width: f32,
     min_height: f32,
     max_width: f32,
-    max_height: f32
+    max_height: f32,
 }
-
 impl SizeRequest {
-    pub fn min_width(&self) -> f32 {self.min_width}
-    pub fn min_height(&self) -> f32 {self.min_height}
-    pub fn max_width(&self) -> f32 {self.max_width}
-    pub fn max_height(&self) -> f32 {self.max_height}
+    /// Returns the minimum width.
+    pub fn min_width(&self) -> f32 { self.min_width }
 
+    /// Returns the minimum height.
+    pub fn min_height(&self) -> f32 { self.min_height }
+
+    /// Returns the maximum width.
+    pub fn max_width(&self) -> f32 { self.max_width }
+
+    /// Returns the maximum height.
+    pub fn max_height(&self) -> f32 { self.max_height }
+
+    /// Creates a new `SizeRequest`, panicking if min > max for either dimension.
     pub fn new(min_width: f32, min_height: f32, max_width: f32, max_height: f32) -> Self {
-        if min_width > max_width {panic!("Min Width was Greater Than Max Width");}
-        if min_height > max_height {panic!("Min Height was Greater Than Max Height");}
-        SizeRequest{min_width, min_height, max_width, max_height}
+        if min_width > max_width { panic!("Min Width was Greater Than Max Width"); }
+        if min_height > max_height { panic!("Min Height was Greater Than Max Height"); }
+        SizeRequest { min_width, min_height, max_width, max_height }
     }
 
+    /// Creates a fixed-size `SizeRequest` where min and max are equal.
     pub fn fixed(size: (f32, f32)) -> Self {
-        SizeRequest{min_width: size.0, min_height: size.1, max_width: size.0, max_height: size.1}
+        SizeRequest { min_width: size.0, min_height: size.1, max_width: size.0, max_height: size.1 }
     }
 
+    /// Creates a `SizeRequest` that can expand to fill all available space.
     pub fn fill() -> Self {
-        SizeRequest{min_width: 0.0, min_height: 0.0, max_width: f32::MAX, max_height: f32::MAX}
+        SizeRequest { min_width: 0.0, min_height: 0.0, max_width: f32::MAX, max_height: f32::MAX }
     }
 
+    /// Clamps a given size into this request's min/max bounds.
     pub fn get(&self, size: (f32, f32)) -> (f32, f32) {
         (
             self.max_width.min(self.min_width.max(size.0)),
@@ -53,18 +68,22 @@ impl SizeRequest {
         )
     }
 
+    /// Returns a new request with both width and height increased.
     pub fn add(&self, w: f32, h: f32) -> SizeRequest {
         self.add_width(w).add_height(h)
     }
 
+    /// Returns a new request with width increased.
     pub fn add_width(&self, w: f32) -> SizeRequest {
-        SizeRequest::new(self.min_width+w, self.min_height, self.max_width+w, self.max_height)
+        SizeRequest::new(self.min_width + w, self.min_height, self.max_width + w, self.max_height)
     }
 
+    /// Returns a new request with height increased.
     pub fn add_height(&self, h: f32) -> SizeRequest {
-        SizeRequest::new(self.min_width, self.min_height+h, self.max_width, self.max_height+h)
+        SizeRequest::new(self.min_width, self.min_height + h, self.max_width, self.max_height + h)
     }
 
+    /// Returns the combined maximum of two requests.
     pub fn max(&self, other: &Self) -> SizeRequest {
         SizeRequest::new(
             self.min_width.max(other.min_width),
@@ -75,6 +94,7 @@ impl SizeRequest {
     }
 }
 
+/// A simple stack layout that overlays children on top of each other.
 #[derive(Debug, Clone, Copy)]
 pub struct DefaultStack;
 impl Layout for DefaultStack {
