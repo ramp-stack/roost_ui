@@ -1896,7 +1896,9 @@ dependencies = [
 
 [[package]]
 name = "maverick_os"
-version = "0.1.9"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ebfc4ece540eee3cb5d07425d3d32acc2fbc5925d6c16078bc2f28ca0a4a735"
 dependencies = [
  "air",
  "android-activity",
@@ -4537,7 +4539,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu_canvas"
-version = "4.1.0"
+version = "4.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1c1fba5eda6b0fe9af105f63fccad62eca0bed18c11cca42cbf1a0bc7e1c735"
 dependencies = [
  "bytemuck",
  "fast_image_resize",
