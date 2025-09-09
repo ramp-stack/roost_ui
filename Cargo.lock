@@ -63,9 +63,9 @@ dependencies = [
 
 [[package]]
 name = "air"
-version = "0.2.5"
+version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f8a1c2c062d21e370cfb644178f35e6ff554f9d5981b88cb5dd6aa43d97cd79"
+checksum = "fbef871b7806ed4d8d22b145e4b648d55004940eb3fa79af2bba0851bc04a7bb"
 dependencies = [
  "async-trait",
  "chrono",
@@ -889,9 +889,9 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "easy_secp256k1"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46eb67f64a3d0caea17f1fe603a09b4ca5c6b567bb1994092db13d034937aabd"
+checksum = "c306face3479f85b27718a33448778a029a97452ffe1d48123ebb982e5ee47e9"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes 0.16.0",
@@ -1917,9 +1917,9 @@ dependencies = [
 
 [[package]]
 name = "maverick_os"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "214b3a1b8aea487c58365cfd03aadb0e20e0604fa48538d4cd9872a1772ca2e5"
+checksum = "67c009fba99276a9f946b80b4b6e350c04be14f55a2fd75bdac0f7b411e84e6e"
 dependencies = [
  "air",
  "android-activity",
@@ -1929,7 +1929,6 @@ dependencies = [
  "cli-clipboard",
  "dispatch2",
  "downcast-rs 2.0.2",
- "easy_secp256k1",
  "env_logger",
  "hex",
  "image 0.25.8",

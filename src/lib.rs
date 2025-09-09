@@ -23,6 +23,7 @@ use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
 pub use maverick_os::hardware::Context as HardwareContext;
 use maverick_os::runtime::{Services, ServiceList};
 
+pub use maverick_os::active_rusqlite;
 pub use maverick_os::hardware;
 pub use maverick_os::runtime;
 pub use maverick_os::air;
