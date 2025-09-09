@@ -17,3 +17,4 @@ wgpu = "25.0.2"
 include_dir = { version = "0.7.4", features = ["glob"] }
 wgpu_canvas = "4.1.1"
 pelican_ui_proc = "0.2.0"
+easy_secp256k1 = "0.1.0"
