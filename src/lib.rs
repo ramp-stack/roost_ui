@@ -60,6 +60,7 @@ pub use theme::{
     IconResources,
     LayoutResources,
     ButtonColorScheme,
+    BrandResources,
     BrandColor,
     TextColor,
     BackgroundColor,
