@@ -8,7 +8,7 @@ documentation = "https://docs.rs/pelican_ui"
 repository = "https://github.com/ramp-stack/pelican_ui"
 
 [dependencies]
-maverick_os = "0.1.14"
+maverick_os = "0.1.15"
 downcast-rs = "2.0.1"
 image = "0.25.6"
 nsvg = "0.5.1"
@@ -17,4 +17,3 @@ wgpu = "25.0.2"
 include_dir = { version = "0.7.4", features = ["glob"] }
 wgpu_canvas = "4.1.1"
 pelican_ui_proc = "0.2.0"
-easy_secp256k1 = "0.1.0"
