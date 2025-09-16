@@ -1988,7 +1988,9 @@ dependencies = [
 
 [[package]]
 name = "maverick_os"
-version = "0.1.18"
+version = "0.1.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "442234b15f822424fdc1514d85d2ede9aedeb0f93747bec6b4253dfd3b34f921"
 dependencies = [
  "active_rusqlite",
  "air",
@@ -2012,6 +2014,7 @@ dependencies = [
  "objc2 0.6.2",
  "objc2-app-kit 0.3.1",
  "objc2-av-foundation",
+ "objc2-core-foundation",
  "objc2-core-graphics",
  "objc2-core-media",
  "objc2-core-video",
@@ -2465,6 +2468,7 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-core-graphics",
  "objc2-core-image 0.3.1",
+ "objc2-core-media",
  "objc2-core-video",
  "objc2-foundation 0.3.1",
  "objc2-quartz-core 0.3.1",
@@ -2567,7 +2571,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c10c2894a6fed806ade6027bcd50662746363a9589d3ec9d9bef30a4e4bc166"
 dependencies = [
  "bitflags 2.9.4",
+ "block2 0.6.1",
  "dispatch2",
+ "libc",
  "objc2 0.6.2",
 ]
 
@@ -2957,7 +2963,7 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pelican_ui"
-version = "1.1.12"
+version = "1.1.13"
 dependencies = [
  "downcast-rs 2.0.2",
  "image 0.25.8",
