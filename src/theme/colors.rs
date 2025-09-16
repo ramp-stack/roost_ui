@@ -35,6 +35,71 @@ impl ColorResources {
     ) -> Self {
         ColorResources { background, outline, status, text, brand, shades: ShadesColor::default(), button, illustration }
     }
+
+    /// Create a light theme from the given primary color.
+    pub fn light(primary: Color) -> Self {
+        ColorResources { 
+            background: BackgroundColor {
+                primary: Color::from_hex("#FFFFFF", 255),
+                secondary: Color::from_hex("#DDDDDD", 255),
+            },
+            outline: OutlineColor {
+                primary: Color::from_hex("#000000", 255),
+                secondary: Color::from_hex("#444444", 255),
+            },
+            status: StatusColor::default(),
+            text: TextColor {
+                heading: Color::from_hex("#000000", 255),
+                primary: Color::from_hex("#000000", 255),
+                secondary: Color::from_hex("#444444", 255),
+            },
+            brand: BrandColor {
+                primary,
+                secondary: Color::from_hex("#000000", 255),
+            },
+            shades: ShadesColor::default(), 
+            button: ButtonColors::from_brand(primary),
+            illustration: IllustrationColors::default(),
+        }
+    }
+
+    /// Create a dark theme from the given primary color.
+    pub fn dark(primary: Color) -> Self {
+        ColorResources { 
+            background: BackgroundColor {
+                primary: Color::from_hex("#000000", 255),
+                secondary: Color::from_hex("#222222", 255),
+            },
+            outline: OutlineColor {
+                primary: Color::from_hex("#FFFFFF", 255),
+                secondary: Color::from_hex("#AAAAAA", 255),
+            },
+            status: StatusColor::default(),
+            text: TextColor {
+                heading: Color::from_hex("#FFFFFF", 255),
+                primary: Color::from_hex("#FFFFFF", 255),
+                secondary: Color::from_hex("#AAAAAA", 255),
+            },
+            brand: BrandColor {
+                primary,
+                secondary: Color::from_hex("#FFFFFF", 255),
+            },
+            shades: ShadesColor::default(), 
+            button: ButtonColors::from_brand(primary),
+            illustration: IllustrationColors::default(),
+        }
+    }
+
+    /// Create a new theme from the brand color.
+    /// Chooses light or dark depending on brightness of the primary color.
+    pub fn new_from(primary: Color) -> Self {
+        let (r, g, b) = (primary.0, primary.1, primary.2);
+        let brightness = 0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32;
+        match brightness > 100.0 {
+            true => Self::dark(primary),
+            false => Self::light(primary)
+        }
+    }
 }
 
 /// Defines various shades used for UI elements.
@@ -44,13 +109,13 @@ pub struct ShadesColor {
     pub black: Color,
     /// Pure white color.
     pub white: Color,
-    /// A lighter shade of white.
+    /// A semi-transparent white.
     pub lighten: Color,
-    /// A further lightened shade of white.
+    /// A less transparent white. 
     pub lighten2: Color,
-    /// A darkened shade of black.
+    /// A semi-transparent black.
     pub darken: Color,
-    /// A further darkened shade of black.
+    /// A less transparent black.
     pub darken2: Color,
     /// Transparent color.
     pub transparent: Color,
@@ -196,6 +261,100 @@ pub struct ButtonColors {
     pub ghost_selected: ButtonColorScheme,
     /// Button color scheme for the ghost pressed state.
     pub ghost_pressed: ButtonColorScheme,
+}
+
+impl ButtonColors {
+    pub fn from_brand(brand: Color) -> Self {
+        ButtonColors {
+            primary_default: ButtonColorScheme {
+                background: brand,
+                label: Color::from_hex("FFFFFF", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            primary_disabled: ButtonColorScheme {
+                background: Color::from_hex("443f3f", 255),
+                label: Color::from_hex("000000", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            primary_hover: ButtonColorScheme {
+                background: Self::darken(brand, 0.85),
+                label: Color::from_hex("FFFFFF", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            primary_selected: ButtonColorScheme {
+                background: Self::darken(brand, 0.85),
+                label: Color::from_hex("FFFFFF", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            primary_pressed: ButtonColorScheme {
+                background: Self::darken(brand, 0.85),
+                label: Color::from_hex("FFFFFF", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+
+            secondary_default: ButtonColorScheme {
+                background: Color::from_hex("000000", 0),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("585250", 255),
+            },
+            secondary_disabled: ButtonColorScheme {
+                background: Color::from_hex("78716c", 255),
+                label: Color::from_hex("000000", 255),
+                outline:Color::from_hex("585250", 255),
+            },
+            secondary_hover: ButtonColorScheme {
+                background: Color::from_hex("262322", 255),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("585250", 255),
+            },
+            secondary_selected: ButtonColorScheme {
+                background: Color::from_hex("000000", 255),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("ffffff", 255),
+            },
+            secondary_pressed: ButtonColorScheme {
+                background: Color::from_hex("262322", 255),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("585250", 255),
+            },
+
+            ghost_default: ButtonColorScheme {
+                background: Color::from_hex("000000", 0),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            ghost_disabled: ButtonColorScheme {
+                background: Color::from_hex("000000", 0),
+                label: Color::from_hex("78716c", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            ghost_hover: ButtonColorScheme {
+                background: Color::from_hex("262322", 255),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            ghost_selected: ButtonColorScheme {
+                background: Color::from_hex("262322", 255),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+            ghost_pressed: ButtonColorScheme {
+                background: Color::from_hex("262322", 255),
+                label: Color::from_hex("ffffff", 255),
+                outline: Color::from_hex("000000", 0),
+            },
+        }
+    }
+
+    fn darken(c: Color, factor: f32) -> Color {
+        Color (
+            (c.0 as f32 * factor) as u8,
+            (c.1 as f32 * factor) as u8,
+            (c.2 as f32 * factor) as u8,
+            c.3,
+        )
+    }
+
 }
 
 impl Default for ButtonColors {

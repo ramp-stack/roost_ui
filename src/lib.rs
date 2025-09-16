@@ -69,6 +69,7 @@ pub use theme::{
     OutlineColor,
     IllustrationColors,
     StatusColor,
+    ShadesColor,
 };
 
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
@@ -81,7 +82,7 @@ pub trait Plugin: Downcast {
 impl_downcast!(Plugin); 
 
 /// `Assets` stores all the assets required by your project, 
-/// including images, fonts, and other resources.
+/// including images and fonts.
 pub struct Assets {
     dirs: Vec<Dir<'static>>,
     atlas: Atlas,

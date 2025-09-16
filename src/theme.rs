@@ -1,4 +1,5 @@
 use crate::Assets;
+use wgpu_canvas::Color;
 
 pub mod colors;
 pub use colors::*;
@@ -42,5 +43,35 @@ impl Theme {
         layout: LayoutResources,
     ) -> Self { 
         Theme { colors, fonts, icons, brand, layout } 
+    }
+
+    pub fn new_from(ctx: &mut Assets, primary: Color) -> Self {
+        Theme {
+            colors: ColorResources::new_from(primary),
+            fonts: FontResources::default(ctx),
+            icons: IconResources::default(ctx),
+            brand: BrandResources::default(ctx),
+            layout: LayoutResources::default(),
+        }
+    }
+
+    pub fn light(ctx: &mut Assets, primary: Color) -> Self {
+        Theme {
+            colors: ColorResources::light(primary),
+            fonts: FontResources::default(ctx),
+            icons: IconResources::default(ctx),
+            brand: BrandResources::default(ctx),
+            layout: LayoutResources::default(),
+        }
+    }
+
+    pub fn dark(ctx: &mut Assets, primary: Color) -> Self {
+        Theme {
+            colors: ColorResources::dark(primary),
+            fonts: FontResources::default(ctx),
+            icons: IconResources::default(ctx),
+            brand: BrandResources::default(ctx),
+            layout: LayoutResources::default(),
+        }
     }
 }
