@@ -37,7 +37,7 @@ use downcast_rs::{Downcast, impl_downcast};
 use include_dir::{Dir, DirEntry};
 
 #[cfg(target_os = "android")]
-use maverick_os::AndroidApp;
+pub use maverick_os::AndroidApp;
 
 mod wgpu;
 use wgpu::Canvas;
@@ -399,9 +399,6 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
         context.state = self.context.state.take();
     }
 }
-
-
-
 
 #[macro_export]
 macro_rules! start {
