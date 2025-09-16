@@ -36,6 +36,9 @@ pub use pelican_ui_proc::Component;
 use downcast_rs::{Downcast, impl_downcast};
 use include_dir::{Dir, DirEntry};
 
+#[cfg(target_os = "android")]
+use maverick_os::AndroidApp;
+
 mod wgpu;
 use wgpu::Canvas;
 
