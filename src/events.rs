@@ -5,8 +5,8 @@ use std::time::Duration;
 use std::time::Instant;
 use std::fmt::Debug;
 
-use maverick_os::window::{Input, TouchPhase, ElementState, MouseScrollDelta, Touch};
-pub use maverick_os::window::{NamedKey, Key, SmolStr};
+use maverick_os::{Input, TouchPhase, ElementState, MouseScrollDelta, Touch};
+pub use maverick_os::{NamedKey, Key, SmolStr};
 
 use downcast_rs::{Downcast, impl_downcast};
 

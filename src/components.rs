@@ -26,8 +26,6 @@ pub use events::{
     NamedKey, Key, SmolStr,
 };
 
-
-
 mod sizing;
 pub use sizing::{Layout, SizeRequest, DefaultStack, Area};
 
@@ -58,6 +56,11 @@ impl Context {
         }
     }
 
+    /// Adds an event to the event queue.
+    ///
+    ///```rust
+    /// ctx.trigger_event(MyEvent);
+    ///```
     pub fn trigger_event(&mut self, event: impl Event) {
         self.events.push_back(Box::new(event));
     }
@@ -68,20 +71,16 @@ impl Context {
             .downcast_mut().unwrap()
     }
 
+    /// Returns a mutable reference to the state.
+    ///```rust
+    /// ctx.state().get::<MyStoredFiles>().map(|files| println!("Files Found {:?}", files));
+    ///```
     pub fn state(&mut self) -> &mut State {
         self.base_context.state()
     }
 
     pub fn include_assets(&mut self, dir: Dir<'static>) {
         self.assets.push(dir);
-    }
-
-    pub fn get_clipboard(&mut self) -> String {
-        self.base_context.get_clipboard()
-    }
-
-    pub fn set_clipboard(&mut self, text: String) {
-        self.base_context.set_clipboard(text)
     }
 
     pub fn add_font(&mut self, font: &[u8]) -> canvas::Font {

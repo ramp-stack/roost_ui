@@ -66,20 +66,10 @@ impl ColorResources {
     /// Create a dark theme from the given primary color.
     pub fn dark(primary: Color) -> Self {
         ColorResources { 
-            background: BackgroundColor {
-                primary: Color::from_hex("#000000", 255),
-                secondary: Color::from_hex("#222222", 255),
-            },
-            outline: OutlineColor {
-                primary: Color::from_hex("#FFFFFF", 255),
-                secondary: Color::from_hex("#AAAAAA", 255),
-            },
+            background: BackgroundColor::default(),
+            outline: OutlineColor::default(),
             status: StatusColor::default(),
-            text: TextColor {
-                heading: Color::from_hex("#FFFFFF", 255),
-                primary: Color::from_hex("#FFFFFF", 255),
-                secondary: Color::from_hex("#AAAAAA", 255),
-            },
+            text: TextColor::default(),
             brand: BrandColor {
                 primary,
                 secondary: Color::from_hex("#FFFFFF", 255),

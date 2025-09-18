@@ -19,15 +19,19 @@ use std::sync::Arc;
 
 use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 
-use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
-pub use maverick_os::hardware::Context as HardwareContext;
-use maverick_os::runtime::{Services, ServiceList};
-
-pub use maverick_os::active_rusqlite;
-pub use maverick_os::hardware;
-pub use maverick_os::runtime;
-pub use maverick_os::air;
-pub use maverick_os::{MaverickOS, start as maverick_start, State};
+pub use maverick_os::{
+    Window, 
+    RuntimeContext, 
+    HardwareContext, 
+    MaverickOS, 
+    start as maverick_start, 
+    State, 
+    Event as WindowEvent,
+    Lifetime, 
+    Services, 
+    ServiceList,
+    self,
+};
 
 pub use include_dir::include_dir as include_assets;
 
@@ -171,7 +175,7 @@ impl<'a, P: Plugin> Drop for PluginGuard<'a, P> {
 /// `Context` holds the app context, including hardware, runtime, assets, theme, plugins, events, and state.
 pub struct Context {
     pub hardware: HardwareContext,
-    pub runtime: runtime::Context,
+    pub runtime: RuntimeContext,
     pub assets: Assets,
     pub theme: Theme,
     plugins: PluginList,
@@ -181,7 +185,7 @@ pub struct Context {
 
 impl Context {
     /// Creates a new `Context` instance and loads the default Pelican UI assets.
-    pub fn new(hardware: HardwareContext, runtime: runtime::Context, state: Option<State>) -> Self {
+    pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Option<State>) -> Self {
         let mut assets = Assets::new();
         assets.include_assets(include_assets!("./resources"));
         Context {
@@ -363,7 +367,7 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                 Lifetime::Draw => {//Size before events because the events are given between
                                    //resizing
 
-                    let result = self.event_handler.on_input(&self.scale, maverick_os::window::Input::Tick);
+                    let result = self.event_handler.on_input(&self.scale, maverick_os::Input::Tick);
                     if let Some(event) = result {
                         self.context.events.push_back(event);
                     }
