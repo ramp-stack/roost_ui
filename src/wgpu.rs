@@ -18,6 +18,9 @@ pub struct Canvas {
 }
 
 impl Canvas {
+    /// Creates a new `Canvas` for the given window and size.
+    ///
+    /// Returns the `Canvas` and its initial `(width, height)`
     pub async fn new<W: WindowHandle + 'static>(window: W, width: u32, height: u32) -> (Self, (u32, u32)) {
         let instance = Instance::new(&InstanceDescriptor::default());
 
@@ -96,6 +99,9 @@ impl Canvas {
         }, size)
     }
 
+    /// Resizes the canvas to the given dimensions.
+    ///
+    /// Returns the updated `(width, height)`.
     pub fn resize<W: WindowHandle + 'static>(
         &mut self, _new_window: Option<Arc<W>>, width: u32, height: u32
     ) -> (u32, u32) {
@@ -117,6 +123,9 @@ impl Canvas {
         (self.config.width, self.config.height)
     }
 
+    /// Draws the given `items` using the provided `atlas`.
+    ///
+    /// Handles render pass setup, MSAA, and depth buffer automatically.
     pub fn draw(&mut self, atlas: &mut Atlas, items: Vec<(Area, Item)>) {
         self.renderer.prepare(
             &self.device,

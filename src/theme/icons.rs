@@ -77,7 +77,6 @@ use std::collections::HashMap;
 /// - ![wallet](https://raw.githubusercontent.com/ramp-stack/pelican_ui/master/resources/icons/wallet.svg) `wallet`
 /// - ![warning](https://raw.githubusercontent.com/ramp-stack/pelican_ui/master/resources/icons/warning.svg) `warning`
 /// - ![x](https://raw.githubusercontent.com/ramp-stack/pelican_ui/master/resources/icons/x.svg) `x`
-
 pub struct IconResources(HashMap<&'static str, resources::Image>);
 
 impl IconResources {

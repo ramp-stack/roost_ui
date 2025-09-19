@@ -17,17 +17,21 @@ use std::collections::BTreeMap;
 use std::any::TypeId;
 use std::sync::Arc;
 
-use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
+use wgpu_canvas::{Atlas, Item as CanvasItem, Area as CanvasArea};
 
-use maverick_os::window::{Window, Event as WindowEvent, Lifetime};
-pub use maverick_os::hardware::Context as HardwareContext;
-use maverick_os::runtime::{Services, ServiceList};
-
-pub use maverick_os::active_rusqlite;
-pub use maverick_os::hardware;
-pub use maverick_os::runtime;
-pub use maverick_os::air;
-pub use maverick_os::{MaverickOS, start as maverick_start, State};
+pub use maverick_os::{
+    Window, 
+    RuntimeContext, 
+    HardwareContext, 
+    MaverickOS, 
+    start as maverick_start, 
+    State, 
+    Event as WindowEvent,
+    Lifetime, 
+    Services, 
+    ServiceList,
+    self,
+};
 
 pub use include_dir::include_dir as include_assets;
 
@@ -42,14 +46,45 @@ pub use maverick_os::AndroidApp;
 mod wgpu;
 use wgpu::Canvas;
 
-pub mod events;
-use events::{EventHandler, Events, Event, TickEvent};
+mod events;
+pub use events::{
+    NamedKey,
+    Key,
+    SmolStr,
+    Event,
+    Events,
+    OnEvent,
+    MouseState,
+    KeyboardState,
+    MouseEvent,
+    KeyboardEvent,
+    TickEvent,
+};
 
-pub mod layout;
+
+use events::{EventHandler,};
+
+mod layout;
+pub use layout::{Area, Layout, SizeRequest, DefaultStack};
+
 use layout::{Scale, Scaling};
 
-pub mod drawable;
-use drawable::{Drawable, _Drawable, SizedBranch};
+mod drawable;
+pub use drawable::{
+    Text, 
+    Font, 
+    Span, 
+    Align, 
+    Cursor, 
+    Color, 
+    ShapeType, 
+    Drawable, 
+    Shape, 
+    Image, 
+    Component
+};
+
+use drawable::{_Drawable, SizedBranch};
 
 pub mod resources {
     pub use wgpu_canvas::{Image, Font};
@@ -171,7 +206,7 @@ impl<'a, P: Plugin> Drop for PluginGuard<'a, P> {
 /// `Context` holds the app context, including hardware, runtime, assets, theme, plugins, events, and state.
 pub struct Context {
     pub hardware: HardwareContext,
-    pub runtime: runtime::Context,
+    pub runtime: RuntimeContext,
     pub assets: Assets,
     pub theme: Theme,
     plugins: PluginList,
@@ -181,7 +216,7 @@ pub struct Context {
 
 impl Context {
     /// Creates a new `Context` instance and loads the default Pelican UI assets.
-    pub fn new(hardware: HardwareContext, runtime: runtime::Context, state: Option<State>) -> Self {
+    pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Option<State>) -> Self {
         let mut assets = Assets::new();
         assets.include_assets(include_assets!("./resources"));
         Context {
@@ -304,7 +339,7 @@ pub struct PelicanEngine<A: Application> {
     sized_app: SizedBranch,
     application: Box<dyn Drawable>,
     event_handler: EventHandler,
-    items: Vec<(Area, CanvasItem)>,
+    items: Vec<(CanvasArea, CanvasItem)>,
 }
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
@@ -363,7 +398,7 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                 Lifetime::Draw => {//Size before events because the events are given between
                                    //resizing
 
-                    let result = self.event_handler.on_input(&self.scale, maverick_os::window::Input::Tick);
+                    let result = self.event_handler.on_input(&self.scale, maverick_os::Input::Tick);
                     if let Some(event) = result {
                         self.context.events.push_back(event);
                     }
