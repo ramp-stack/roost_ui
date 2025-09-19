@@ -17,7 +17,7 @@ use std::collections::BTreeMap;
 use std::any::TypeId;
 use std::sync::Arc;
 
-use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
+use wgpu_canvas::{Atlas, Item as CanvasItem, Area as CanvasArea};
 
 pub use maverick_os::{
     Window, 
@@ -46,14 +46,45 @@ pub use maverick_os::AndroidApp;
 mod wgpu;
 use wgpu::Canvas;
 
-pub mod events;
-use events::{EventHandler, Events, Event, TickEvent};
+mod events;
+pub use events::{
+    NamedKey,
+    Key,
+    SmolStr,
+    Event,
+    Events,
+    OnEvent,
+    MouseState,
+    KeyboardState,
+    MouseEvent,
+    KeyboardEvent,
+    TickEvent,
+};
 
-pub mod layout;
+
+use events::{EventHandler,};
+
+mod layout;
+pub use layout::{Area, Layout, SizeRequest, DefaultStack};
+
 use layout::{Scale, Scaling};
 
-pub mod drawable;
-use drawable::{Drawable, _Drawable, SizedBranch};
+mod drawable;
+pub use drawable::{
+    Text, 
+    Font, 
+    Span, 
+    Align, 
+    Cursor, 
+    Color, 
+    ShapeType, 
+    Drawable, 
+    Shape, 
+    Image, 
+    Component
+};
+
+use drawable::{_Drawable, SizedBranch};
 
 pub mod resources {
     pub use wgpu_canvas::{Image, Font};
@@ -308,7 +339,7 @@ pub struct PelicanEngine<A: Application> {
     sized_app: SizedBranch,
     application: Box<dyn Drawable>,
     event_handler: EventHandler,
-    items: Vec<(Area, CanvasItem)>,
+    items: Vec<(CanvasArea, CanvasItem)>,
 }
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
