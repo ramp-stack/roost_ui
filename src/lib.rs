@@ -15,9 +15,8 @@
 
 use std::collections::BTreeMap;
 use std::any::TypeId;
-use std::sync::Arc;
 
-use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
+use wgpu_canvas::{Atlas, Item as CanvasItem};
 use maverick_os::window::Lifetime;
 pub use maverick_os::{ 
     State, 
@@ -37,7 +36,7 @@ pub mod events;
 use events::{EventHandler, Events, Event, TickEvent};
 
 pub mod layout;
-use layout::{Scale, Scaling};
+use layout::Scale;
 
 pub mod drawable;
 use drawable::{Drawable, _Drawable, SizedBranch};
@@ -265,11 +264,15 @@ pub trait Application: Services + Plugins {
 
 #[doc(hidden)]
 pub mod __private {
-    pub use maverick_os::{Application, RuntimeContext, HardwareContext, start as maverick_start};
+    use std::sync::Arc;
     use wgpu_canvas::Area;
-    use crate::{EventHandler, CanvasItem, Scale, Canvas, Context, SizedBranch, Drawable};
+
     use maverick_os::window::{Window, Event as WindowEvent};
-    use maverick_os::{Services, ServiceList};
+    pub use maverick_os::{HardwareContext, RuntimeContext, ServiceList, Services, start as maverick_start};
+    
+    use crate::{_Drawable, Application, Canvas, CanvasItem, Context, Drawable, EventHandler, Lifetime, Scale, SizedBranch, TickEvent};
+    use crate::layout::Scaling;
+
 
     /// Provide [`Services`] for [`PelicanEngine`] by deferring to the application type.
     impl<A: Application> Services for PelicanEngine<A> {
