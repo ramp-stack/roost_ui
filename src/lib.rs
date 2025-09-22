@@ -18,27 +18,17 @@ use std::any::TypeId;
 use std::sync::Arc;
 
 use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
-
-pub use maverick_os::{
-    Window, 
-    RuntimeContext, 
-    HardwareContext, 
-    MaverickOS, 
-    start as maverick_start, 
+use maverick_os::window::Lifetime;
+pub use maverick_os::{ 
     State, 
-    Event as WindowEvent,
-    Lifetime, 
+    window::Event as WindowEvent,
     Services, 
     ServiceList,
     self,
 };
 
 pub use pelican_ui_proc::Component;
-
 pub use include_dir::include_dir;
-
-#[cfg(target_os = "android")]
-pub use maverick_os::AndroidApp;
 
 mod wgpu;
 use wgpu::Canvas;
@@ -68,12 +58,15 @@ pub trait Plugin: Downcast {
 }
 impl_downcast!(Plugin);
 
-pub mod private {
-    pub use include_dir::{Dir, DirEntry};
-    pub use downcast_rs::{Downcast, impl_downcast};
-}
+pub use include_dir::{Dir, DirEntry};
+pub use downcast_rs::{Downcast, impl_downcast};
+pub use maverick_os::{window::Window, RuntimeContext, HardwareContext};
 
-use crate::private::*;
+
+#[doc(hidden)]
+pub mod __private {
+    pub use maverick_os::{window::Window, RuntimeContext, HardwareContext, start as maverick_start};
+}
 
 /// `Assets` stores all the assets required by your project, 
 /// including images and fonts.
@@ -281,7 +274,6 @@ impl<A: Application> Services for PelicanEngine<A> {
     fn services() -> ServiceList { A::services() }
 }
 
-
 /// The main engine type.
 ///
 /// `PelicanEngine` wires together the [`Application`], windowing system,
@@ -352,9 +344,9 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
                 Lifetime::Paused => {},
                 Lifetime::Close => {},
                 Lifetime::Draw => {//Size before events because the events are given between
-                                   //resizing
+                                //resizing
 
-                    let result = self.event_handler.on_input(&self.scale, maverick_os::Input::Tick);
+                    let result = self.event_handler.on_input(&self.scale, maverick_os::window::Input::Tick);
                     if let Some(event) = result {
                         self.context.events.push_back(event);
                     }
@@ -391,9 +383,12 @@ impl<A: Application> maverick_os::Application for PelicanEngine<A> {
     }
 }
 
+
 #[macro_export]
 macro_rules! start {
     ($app:ty) => {
+        pub use $crate::__private::*;
+
         maverick_start!(PelicanEngine<$app>);
     };
 }
