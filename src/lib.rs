@@ -17,7 +17,7 @@ use std::collections::BTreeMap;
 use std::any::TypeId;
 use std::sync::Arc;
 
-use wgpu_canvas::{Atlas, Item as CanvasItem, Area as CanvasArea};
+use wgpu_canvas::{Atlas, Item as CanvasItem, Area};
 
 pub use maverick_os::{
     Window, 
@@ -33,12 +33,9 @@ pub use maverick_os::{
     self,
 };
 
-pub use include_dir::include_dir as include_assets;
-
 pub use pelican_ui_proc::Component;
 
-use downcast_rs::{Downcast, impl_downcast};
-use include_dir::{Dir, DirEntry};
+pub use include_dir::include_dir;
 
 #[cfg(target_os = "android")]
 pub use maverick_os::AndroidApp;
@@ -46,69 +43,21 @@ pub use maverick_os::AndroidApp;
 mod wgpu;
 use wgpu::Canvas;
 
-mod events;
-pub use events::{
-    NamedKey,
-    Key,
-    SmolStr,
-    Event,
-    Events,
-    OnEvent,
-    MouseState,
-    KeyboardState,
-    MouseEvent,
-    KeyboardEvent,
-    TickEvent,
-};
+pub mod events;
+use events::{EventHandler, Events, Event, TickEvent};
 
-
-use events::{EventHandler,};
-
-mod layout;
-pub use layout::{Area, Layout, SizeRequest, DefaultStack};
-
+pub mod layout;
 use layout::{Scale, Scaling};
 
-mod drawable;
-pub use drawable::{
-    Text, 
-    Font, 
-    Span, 
-    Align, 
-    Cursor, 
-    Color, 
-    ShapeType, 
-    Drawable, 
-    Shape, 
-    Image, 
-    Component
-};
-
-use drawable::{_Drawable, SizedBranch};
+pub mod drawable;
+use drawable::{Drawable, _Drawable, SizedBranch};
 
 pub mod resources {
     pub use wgpu_canvas::{Image, Font};
 }
 
-mod theme;
-pub use theme::{
-    Theme,
-    Illustrations,
-    ColorResources,
-    FontResources,
-    IconResources,
-    LayoutResources,
-    ButtonColorScheme,
-    BrandResources,
-    BrandColor,
-    TextColor,
-    BackgroundColor,
-    ButtonColors,
-    OutlineColor,
-    IllustrationColors,
-    StatusColor,
-    ShadesColor,
-};
+pub mod theme;
+use theme::Theme;
 
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
 
@@ -117,7 +66,14 @@ pub trait Plugin: Downcast {
 
     fn event(&mut self, _ctx: &mut Context, _event: &dyn Event) {}
 }
-impl_downcast!(Plugin); 
+impl_downcast!(Plugin);
+
+pub mod private {
+    pub use include_dir::{Dir, DirEntry};
+    pub use downcast_rs::{Downcast, impl_downcast};
+}
+
+use crate::private::*;
 
 /// `Assets` stores all the assets required by your project, 
 /// including images and fonts.
@@ -218,7 +174,7 @@ impl Context {
     /// Creates a new `Context` instance and loads the default Pelican UI assets.
     pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Option<State>) -> Self {
         let mut assets = Assets::new();
-        assets.include_assets(include_assets!("./resources"));
+        assets.include_assets(include_dir!("./resources"));
         Context {
             hardware,
             runtime,
@@ -339,7 +295,7 @@ pub struct PelicanEngine<A: Application> {
     sized_app: SizedBranch,
     application: Box<dyn Drawable>,
     event_handler: EventHandler,
-    items: Vec<(CanvasArea, CanvasItem)>,
+    items: Vec<(Area, CanvasItem)>,
 }
 
 impl<A: Application> maverick_os::Application for PelicanEngine<A> {
