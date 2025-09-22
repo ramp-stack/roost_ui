@@ -15,100 +15,38 @@
 
 use std::collections::BTreeMap;
 use std::any::TypeId;
-use std::sync::Arc;
 
-use wgpu_canvas::{Atlas, Item as CanvasItem, Area as CanvasArea};
-
-pub use maverick_os::{
-    Window, 
-    RuntimeContext, 
-    HardwareContext, 
-    MaverickOS, 
-    start as maverick_start, 
+use wgpu_canvas::{Atlas, Item as CanvasItem};
+use maverick_os::window::Lifetime;
+pub use maverick_os::{ 
     State, 
-    Event as WindowEvent,
-    Lifetime, 
+    window::Event as WindowEvent,
     Services, 
     ServiceList,
     self,
 };
 
-pub use include_dir::include_dir as include_assets;
-
 pub use pelican_ui_proc::Component;
-
-use downcast_rs::{Downcast, impl_downcast};
-use include_dir::{Dir, DirEntry};
-
-#[cfg(target_os = "android")]
-pub use maverick_os::AndroidApp;
+pub use include_dir::include_dir;
 
 mod wgpu;
 use wgpu::Canvas;
 
-mod events;
-pub use events::{
-    NamedKey,
-    Key,
-    SmolStr,
-    Event,
-    Events,
-    OnEvent,
-    MouseState,
-    KeyboardState,
-    MouseEvent,
-    KeyboardEvent,
-    TickEvent,
-};
+pub mod events;
+use events::{EventHandler, Events, Event, TickEvent};
 
+pub mod layout;
+use layout::Scale;
 
-use events::{EventHandler,};
-
-mod layout;
-pub use layout::{Area, Layout, SizeRequest, DefaultStack};
-
-use layout::{Scale, Scaling};
-
-mod drawable;
-pub use drawable::{
-    Text, 
-    Font, 
-    Span, 
-    Align, 
-    Cursor, 
-    Color, 
-    ShapeType, 
-    Drawable, 
-    Shape, 
-    Image, 
-    Component
-};
-
-use drawable::{_Drawable, SizedBranch};
+pub mod drawable;
+use drawable::{Drawable, _Drawable, SizedBranch};
 
 pub mod resources {
     pub use wgpu_canvas::{Image, Font};
 }
 
-mod theme;
-pub use theme::{
-    Theme,
-    Illustrations,
-    ColorResources,
-    FontResources,
-    IconResources,
-    LayoutResources,
-    ButtonColorScheme,
-    BrandResources,
-    BrandColor,
-    TextColor,
-    BackgroundColor,
-    ButtonColors,
-    OutlineColor,
-    IllustrationColors,
-    StatusColor,
-    ShadesColor,
-};
+pub mod theme;
+use theme::Theme;
 
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
 
@@ -117,7 +55,11 @@ pub trait Plugin: Downcast {
 
     fn event(&mut self, _ctx: &mut Context, _event: &dyn Event) {}
 }
-impl_downcast!(Plugin); 
+impl_downcast!(Plugin);
+
+pub use include_dir::{Dir, DirEntry};
+pub use downcast_rs::{Downcast, impl_downcast};
+pub use maverick_os::{window::Window, RuntimeContext, HardwareContext};
 
 /// `Assets` stores all the assets required by your project, 
 /// including images and fonts.
@@ -218,7 +160,7 @@ impl Context {
     /// Creates a new `Context` instance and loads the default Pelican UI assets.
     pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Option<State>) -> Self {
         let mut assets = Assets::new();
-        assets.include_assets(include_assets!("./resources"));
+        assets.include_assets(include_dir!("./resources"));
         Context {
             hardware,
             runtime,
@@ -302,13 +244,6 @@ impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.ass
 /// # Example
 /// ```
 /// struct MyApp;
-/// impl Services for MyApp {
-///     fn services() -> ServiceList { ServiceList::new() }
-/// }
-///
-/// impl Plugins for MyApp {
-///     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>> { vec![] }
-/// }
 ///
 /// impl Application for MyApp {
 ///     async fn new(ctx: &mut Context) -> Box<dyn Drawable> {
@@ -316,128 +251,144 @@ impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.ass
 ///     }
 /// }
 /// ```
-pub trait Application: Services + Plugins {
+pub trait Application {
     fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
+    fn services() -> ServiceList {ServiceList::default()}
+    fn plugins(_ctx: &mut Context) -> Vec<Box<dyn Plugin>> { vec![] }
 }
 
-/// Provide [`Services`] for [`PelicanEngine`] by deferring to the application type.
-impl<A: Application> Services for PelicanEngine<A> {
-    fn services() -> ServiceList { A::services() }
-}
+#[doc(hidden)]
+pub mod __private {
+    use std::sync::Arc;
+    use wgpu_canvas::Area;
+
+    use maverick_os::window::{Window, Event as WindowEvent};
+    pub use maverick_os::{HardwareContext, RuntimeContext, ServiceList, Services, start as maverick_start};
+    
+    use crate::{_Drawable, Application, Canvas, CanvasItem, Context, Drawable, EventHandler, Lifetime, Scale, SizedBranch, TickEvent};
+    use crate::layout::Scaling;
 
 
-/// The main engine type.
-///
-/// `PelicanEngine` wires together the [`Application`], windowing system,
-/// plugin management, drawing, and event handling.
-pub struct PelicanEngine<A: Application> {
-    _p: std::marker::PhantomData<A>,
-    scale: Scale,
-    canvas: Canvas,
-    screen: (f32, f32),
-    context: Context,
-    sized_app: SizedBranch,
-    application: Box<dyn Drawable>,
-    event_handler: EventHandler,
-    items: Vec<(CanvasArea, CanvasItem)>,
-}
-
-impl<A: Application> maverick_os::Application for PelicanEngine<A> {
-    /// Initializes the engine with the given MaverickOS context.
-    ///
-    /// - Creates a canvas bound to the OS window.
-    /// - Constructs an application via [`Application::new`].
-    /// - Registers plugins returned by [`Application::plugins`].
-    async fn new(ctx: &mut maverick_os::Context) -> Self {
-        ctx.hardware.register_notifs();
-        let size = ctx.window.size;
-        let (canvas, size) = Canvas::new(ctx.window.handle.clone(), size.0, size.1).await;
-        let scale = Scale(ctx.window.scale_factor);
-        let screen = (scale.logical(size.0 as f32), scale.logical(size.1 as f32));
-        let mut context = Context::new(ctx.hardware.clone(), ctx.runtime.clone(), ctx.state.take());
-        let plugins = A::plugins(&mut context);
-        context.plugins = plugins.into_iter().map(|p| ((*p).type_id(), p)).collect();
-        let mut application = A::new(&mut context).await;
-        let size_request = _Drawable::request_size(&*application, &mut context);
-        let sized_app = application.build(&mut context, screen, size_request);
-        ctx.state = context.state.take();
-        PelicanEngine{
-            _p: std::marker::PhantomData::<A>,
-            scale,
-            canvas,
-            screen,
-            context,
-            sized_app,
-            application,
-            event_handler: EventHandler::new(),
-            items: Vec::new()
-        }
+    /// Provide [`Services`] for [`PelicanEngine`] by deferring to the application type.
+    impl<A: Application> Services for PelicanEngine<A> {
+        fn services() -> ServiceList { A::services() }
     }
-        
-    async fn on_event(&mut self, context: &mut maverick_os::Context, event: WindowEvent) {
-        self.context.state = context.state.take();
-        match event {
-            WindowEvent::Lifetime(lifetime) => match lifetime {
-                Lifetime::Resized => {
-                    self.scale.0 = context.window.scale_factor;
-                    let size = context.window.size;
-                    let size = self.canvas.resize::<Arc<Window>>(None, size.0, size.1);
-                    let size = (self.scale.logical(size.0 as f32), self.scale.logical(size.1 as f32));
-                    self.screen = size;
-                },
-                Lifetime::Resumed => {
-                    let _ = self.items.drain(..);
-                    self.scale.0 = context.window.scale_factor;
-                    let size = context.window.size;
-                    let size = self.canvas.resize(Some(context.window.handle.clone()), size.0, size.1);
-                    let size = (self.scale.logical(size.0 as f32), self.scale.logical(size.1 as f32));
-                    self.screen = size;
-                },
-                Lifetime::Paused => {},
-                Lifetime::Close => {},
-                Lifetime::Draw => {//Size before events because the events are given between
-                                   //resizing
 
-                    let result = self.event_handler.on_input(&self.scale, maverick_os::Input::Tick);
-                    if let Some(event) = result {
-                        self.context.events.push_back(event);
-                    }
-                    self.application.event(&mut self.context, self.sized_app.clone(), Box::new(TickEvent));
+    /// The main engine type.
+    ///
+    /// `PelicanEngine` wires together the [`Application`], windowing system,
+    /// plugin management, drawing, and event handling.
+    pub struct PelicanEngine<A: Application> {
+        _p: std::marker::PhantomData<A>,
+        scale: Scale,
+        canvas: Canvas,
+        screen: (f32, f32),
+        context: Context,
+        sized_app: SizedBranch,
+        application: Box<dyn Drawable>,
+        event_handler: EventHandler,
+        items: Vec<(Area, CanvasItem)>,
+    }
 
-                    while let Some(event) = self.context.events.pop_front() {
-                        if let Some(event) = event
-                            .pass(&mut self.context, vec![((0.0, 0.0), self.sized_app.0)])
-                            .remove(0)
-                        {
-                            for id in self.context.plugins.keys().copied().collect::<Vec<_>>() {
-                                let mut plugin = self.context.plugins.remove(&id).unwrap();
-                                plugin.event(&mut self.context, &*event);    
-                                self.context.plugins.insert(id, plugin);
-                            }
-                            self.application.event(&mut self.context, self.sized_app.clone(), event);
-                        }
-                    }
-
-                    let size_request = _Drawable::request_size(&*self.application, &mut self.context);
-                    self.sized_app = self.application.build(&mut self.context, self.screen, size_request);
-                    let drawn = self.application.draw(self.sized_app.clone(), (0.0, 0.0), (0.0, 0.0, self.screen.0, self.screen.1));
-                    let items: Vec<_> = drawn.into_iter().map(|(a, i)| (a.scale(&self.scale), i.scale(&self.scale))).collect();
-                    if self.items != items {
-                        self.items = items.clone();
-                        self.canvas.draw(&mut self.context.assets.atlas, items);
-                    }
-                },
-                Lifetime::MemoryWarning => {},
-            },
-            WindowEvent::Input(input) => {if let Some(event) = self.event_handler.on_input(&self.scale, input) {self.context.events.push_back(event)}}
+    impl<A: Application> maverick_os::Application for PelicanEngine<A> {
+        /// Initializes the engine with the given MaverickOS context.
+        ///
+        /// - Creates a canvas bound to the OS window.
+        /// - Constructs an application via [`Application::new`].
+        /// - Registers plugins returned by [`Application::plugins`].
+        async fn new(ctx: &mut maverick_os::Context) -> Self {
+            ctx.hardware.register_notifs();
+            let size = ctx.window.size;
+            let (canvas, size) = Canvas::new(ctx.window.handle.clone(), size.0, size.1).await;
+            let scale = Scale(ctx.window.scale_factor);
+            let screen = (scale.logical(size.0 as f32), scale.logical(size.1 as f32));
+            let mut context = Context::new(ctx.hardware.clone(), ctx.runtime.clone(), ctx.state.take());
+            let plugins = A::plugins(&mut context);
+            context.plugins = plugins.into_iter().map(|p| ((*p).type_id(), p)).collect();
+            let mut application = A::new(&mut context).await;
+            let size_request = _Drawable::request_size(&*application, &mut context);
+            let sized_app = application.build(&mut context, screen, size_request);
+            ctx.state = context.state.take();
+            PelicanEngine{
+                _p: std::marker::PhantomData::<A>,
+                scale,
+                canvas,
+                screen,
+                context,
+                sized_app,
+                application,
+                event_handler: EventHandler::new(),
+                items: Vec::new()
+            }
         }
-        context.state = self.context.state.take();
+            
+        async fn on_event(&mut self, context: &mut maverick_os::Context, event: WindowEvent) {
+            self.context.state = context.state.take();
+            match event {
+                WindowEvent::Lifetime(lifetime) => match lifetime {
+                    Lifetime::Resized => {
+                        self.scale.0 = context.window.scale_factor;
+                        let size = context.window.size;
+                        let size = self.canvas.resize::<Arc<Window>>(None, size.0, size.1);
+                        let size = (self.scale.logical(size.0 as f32), self.scale.logical(size.1 as f32));
+                        self.screen = size;
+                    },
+                    Lifetime::Resumed => {
+                        let _ = self.items.drain(..);
+                        self.scale.0 = context.window.scale_factor;
+                        let size = context.window.size;
+                        let size = self.canvas.resize(Some(context.window.handle.clone()), size.0, size.1);
+                        let size = (self.scale.logical(size.0 as f32), self.scale.logical(size.1 as f32));
+                        self.screen = size;
+                    },
+                    Lifetime::Paused => {},
+                    Lifetime::Close => {},
+                    Lifetime::Draw => {//Size before events because the events are given between
+                                    //resizing
+
+                        let result = self.event_handler.on_input(&self.scale, maverick_os::window::Input::Tick);
+                        if let Some(event) = result {
+                            self.context.events.push_back(event);
+                        }
+                        self.application.event(&mut self.context, self.sized_app.clone(), Box::new(TickEvent));
+
+                        while let Some(event) = self.context.events.pop_front() {
+                            if let Some(event) = event
+                                .pass(&mut self.context, vec![((0.0, 0.0), self.sized_app.0)])
+                                .remove(0)
+                            {
+                                for id in self.context.plugins.keys().copied().collect::<Vec<_>>() {
+                                    let mut plugin = self.context.plugins.remove(&id).unwrap();
+                                    plugin.event(&mut self.context, &*event);    
+                                    self.context.plugins.insert(id, plugin);
+                                }
+                                self.application.event(&mut self.context, self.sized_app.clone(), event);
+                            }
+                        }
+
+                        let size_request = _Drawable::request_size(&*self.application, &mut self.context);
+                        self.sized_app = self.application.build(&mut self.context, self.screen, size_request);
+                        let drawn = self.application.draw(self.sized_app.clone(), (0.0, 0.0), (0.0, 0.0, self.screen.0, self.screen.1));
+                        let items: Vec<_> = drawn.into_iter().map(|(a, i)| (a.scale(&self.scale), i.scale(&self.scale))).collect();
+                        if self.items != items {
+                            self.items = items.clone();
+                            self.canvas.draw(&mut self.context.assets.atlas, items);
+                        }
+                    },
+                    Lifetime::MemoryWarning => {},
+                },
+                WindowEvent::Input(input) => {if let Some(event) = self.event_handler.on_input(&self.scale, input) {self.context.events.push_back(event)}}
+            }
+            context.state = self.context.state.take();
+        }
     }
 }
 
 #[macro_export]
 macro_rules! start {
     ($app:ty) => {
+        pub use $crate::__private::*;
+
         maverick_start!(PelicanEngine<$app>);
     };
 }

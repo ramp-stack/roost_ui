@@ -45,9 +45,9 @@ impl Theme {
         Theme { colors, fonts, icons, brand, layout } 
     }
 
-    pub fn new_from(ctx: &mut Assets, primary: Color) -> Self {
+    pub fn from(ctx: &mut Assets, primary: Color) -> Self {
         Theme {
-            colors: ColorResources::new_from(primary),
+            colors: ColorResources::from(primary),
             fonts: FontResources::default(ctx),
             icons: IconResources::default(ctx),
             brand: BrandResources::default(ctx),

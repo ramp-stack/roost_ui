@@ -1,6 +1,6 @@
 [package]
 name = "pelican_ui"
-version = "1.1.17"
+version = "1.1.18"
 edition = "2024"
 license = "BSD-3-Clause"
 description = "Pelican UI"
@@ -8,12 +8,12 @@ documentation = "https://docs.rs/pelican_ui"
 repository = "https://github.com/ramp-stack/pelican_ui"
 
 [dependencies]
-maverick_os = "0.1.23"
+maverick_os = "0.1.24"
 downcast-rs = "2.0.1"
 image = "0.25.6"
 nsvg = "0.5.1"
 wgpu = "25.0.2"
 #wgpu_canvas = "4.0.6"
 include_dir = { version = "0.7.4", features = ["glob"] }
-wgpu_canvas = "4.1.1"
+wgpu_canvas = "4.1.2"
 pelican_ui_proc = "0.2.0"
