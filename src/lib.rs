@@ -244,13 +244,6 @@ impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.ass
 /// # Example
 /// ```
 /// struct MyApp;
-/// impl Services for MyApp {
-///     fn services() -> ServiceList { ServiceList::new() }
-/// }
-///
-/// impl Plugins for MyApp {
-///     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>> { vec![] }
-/// }
 ///
 /// impl Application for MyApp {
 ///     async fn new(ctx: &mut Context) -> Box<dyn Drawable> {
@@ -258,8 +251,10 @@ impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.ass
 ///     }
 /// }
 /// ```
-pub trait Application: Services + Plugins {
+pub trait Application {
     fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
+    fn services() -> ServiceList {ServiceList::default()}
+    fn plugins(_ctx: &mut Context) -> Vec<Box<dyn Plugin>> { vec![] }
 }
 
 #[doc(hidden)]
