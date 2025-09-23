@@ -38,7 +38,7 @@ impl ColorResources {
             status: StatusColor::default(),
             text: TextColor::light(),
             brand,
-            button: ButtonColors::from(brand),
+            button: ButtonColors::from(brand, true),
         }
     }
 
@@ -50,7 +50,7 @@ impl ColorResources {
             status: StatusColor::default(),
             text: TextColor::dark(),
             brand,
-            button: ButtonColors::from(brand),
+            button: ButtonColors::from(brand, false),
         }
     }
 
@@ -72,7 +72,12 @@ pub struct BackgroundColor {
 }
 
 impl BackgroundColor {
-    pub fn dark() -> Self {BackgroundColor::default()}
+    pub fn dark() -> Self {
+        BackgroundColor {
+            primary: Color::BLACK,
+            secondary: Color::from_hex("#262322", 255),
+        }
+    }
     pub fn light() -> Self {
         BackgroundColor {
             primary: Color::WHITE,
@@ -82,12 +87,7 @@ impl BackgroundColor {
 }
 
 impl Default for BackgroundColor {
-    fn default() -> Self {
-        BackgroundColor {
-            primary: Color::BLACK,
-            secondary: Color::from_hex("#262322", 255),
-        }
-    }
+    fn default() -> Self { Self::dark() }
 }
 
 /// Defines the outline colors.
@@ -98,7 +98,12 @@ pub struct OutlineColor {
 }
 
 impl OutlineColor {
-    pub fn dark() -> Self {OutlineColor::default()}
+    pub fn dark() -> Self {
+        OutlineColor {
+            primary: Color::WHITE,
+            secondary: Color::from_hex("#585250", 255),
+        }
+    }
     pub fn light() -> Self {
         OutlineColor {
             primary: Color::BLACK,
@@ -108,12 +113,7 @@ impl OutlineColor {
 }
 
 impl Default for OutlineColor {
-    fn default() -> Self {
-        OutlineColor {
-            primary: Color::WHITE,
-            secondary: Color::from_hex("#585250", 255),
-        }
-    }
+    fn default() -> Self { Self::dark() }
 }
 
 /// Defines the colors of text elements.
@@ -125,7 +125,13 @@ pub struct TextColor {
 }
 
 impl TextColor {
-    pub fn dark() -> Self {TextColor::default()}
+    pub fn dark() -> Self {
+        TextColor {
+            heading: Color::WHITE,
+            primary: Color::from_hex("#e2e1df", 255),
+            secondary: Color::from_hex("#a7a29d", 255),
+        }
+    }
     pub fn light() -> Self {
         TextColor {
             heading: Color::BLACK,
@@ -136,13 +142,7 @@ impl TextColor {
 }
 
 impl Default for TextColor {
-    fn default() -> Self {
-        TextColor {
-            heading: Color::WHITE,
-            primary: Color::from_hex("#e2e1df", 255),
-            secondary: Color::from_hex("#a7a29d", 255),
-        }
-    }
+    fn default() -> Self { Self::dark() }
 }
 
 /// Defines the colors representing various status indicators.
@@ -172,11 +172,11 @@ pub struct ButtonColors {
 }
 
 impl ButtonColors {
-    pub fn from(brand: Color) -> Self {
+    pub fn from(brand: Color, is_light: bool) -> Self {
         ButtonColors {
             primary: ButtonColorSet::primary(brand),
-            secondary: ButtonColorSet::secondary(),
-            ghost: ButtonColorSet::ghost(),
+            secondary: ButtonColorSet::secondary(is_light),
+            ghost: ButtonColorSet::ghost(is_light),
         }
     }
 }
@@ -185,8 +185,8 @@ impl Default for ButtonColors {
     fn default() -> Self {
         ButtonColors {
             primary: ButtonColorSet::primary(Color::from_hex("#02f0cc", 255)),
-            secondary: ButtonColorSet::secondary(),
-            ghost: ButtonColorSet::ghost(),
+            secondary: ButtonColorSet::secondary(false),
+            ghost: ButtonColorSet::ghost(false),
         }
     }
 }
@@ -212,7 +212,7 @@ pub struct ButtonColorSet {
 
 impl ButtonColorSet {
     pub fn primary(brand: Color) -> Self {
-        let label = if Color::is_high_contrast(brand) { Color::WHITE } else { Color::BLACK };
+        let label = if !Color::is_high_contrast(brand) { Color::WHITE } else { Color::BLACK };
         ButtonColorSet {
             default: ButtonColorScheme {
                 background: brand,
@@ -230,18 +230,18 @@ impl ButtonColorSet {
                 outline: Color::TRANSPARENT,
             },
             pressed: ButtonColorScheme {
-                background: Color::darken(brand, 0.80),
+                background: Color::darken(brand, 0.8),
                 label,
                 outline: Color::TRANSPARENT
-            },
+            }
         }
     }
 
-    pub fn secondary() -> Self {
+    pub fn secondary(is_light: bool) -> Self {
         ButtonColorSet {
             default: ButtonColorScheme {
                 background: Color::TRANSPARENT,
-                label: Color::WHITE,
+                label: if is_light {Color::BLACK} else {Color::WHITE},
                 outline: Color::from_hex("#585250", 255),
             },
             disabled: ButtonColorScheme {
@@ -250,23 +250,23 @@ impl ButtonColorSet {
                 outline:Color::from_hex("#585250", 255),
             },
             hover: ButtonColorScheme {
-                background: Color::from_hex("#262322", 255),
+                background: if is_light {Color::from_hex("#dcdbda", 255)} else {Color::from_hex("#262322", 255)},
                 label: Color::WHITE,
                 outline: Color::from_hex("#585250", 255),
             },
             pressed: ButtonColorScheme {
-                background: Color::from_hex("#262322", 255),
+                background: if is_light {Color::from_hex("#dcdbda", 255)} else {Color::from_hex("#262322", 255)},
                 label: Color::WHITE,
-                outline: Color::from_hex("#585250", 255),
-            },
+                outline: if is_light {Color::BLACK} else {Color::WHITE},
+            }
         }
     }
 
-    pub fn ghost() -> Self {
+    pub fn ghost(is_light: bool) -> Self {
         ButtonColorSet {
             default: ButtonColorScheme {
                 background: Color::TRANSPARENT,
-                label: Color::WHITE,
+                label: if is_light {Color::BLACK} else {Color::WHITE},
                 outline: Color::TRANSPARENT,
             },
             disabled: ButtonColorScheme {
@@ -275,15 +275,15 @@ impl ButtonColorSet {
                 outline: Color::TRANSPARENT,
             },
             hover: ButtonColorScheme {
-                background: Color::from_hex("#262322", 255),
-                label: Color::WHITE,
+                background: if is_light {Color::from_hex("#dcdbda", 255)} else {Color::from_hex("#262322", 255)},
+                label: if is_light {Color::BLACK} else {Color::WHITE},
                 outline: Color::TRANSPARENT,
             },
             pressed: ButtonColorScheme {
-                background: Color::from_hex("#262322", 255),
-                label: Color::WHITE,
+                background: if is_light {Color::from_hex("#dcdbda", 255)} else {Color::from_hex("#262322", 255)},
+                label: if is_light {Color::BLACK} else {Color::WHITE},
                 outline: Color::TRANSPARENT,
-            },
+            }
         }
     }
 }
