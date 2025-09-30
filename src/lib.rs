@@ -24,6 +24,8 @@ pub use maverick_os::{
     Services, 
     ServiceList,
     self,
+    IS_WEB, 
+    IS_MOBILE
 };
 
 pub use pelican_ui_proc::Component;
@@ -39,20 +41,19 @@ pub mod layout;
 use layout::Scale;
 
 pub mod drawable;
+pub use drawable::Component;
 use drawable::{Drawable, _Drawable, SizedBranch};
+
+//pub mod components;
+// pub mod config;
 
 pub mod resources {
     pub use wgpu_canvas::{Image, Font};
 }
 
-pub mod theme;
-use theme::Theme;
-
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
 
 pub trait Plugin: Downcast {
-    fn new(ctx: &mut Context) -> Self where Self: Sized;
-
     fn event(&mut self, _ctx: &mut Context, _event: &dyn Event) {}
 }
 impl_downcast!(Plugin);
@@ -150,7 +151,6 @@ pub struct Context {
     pub hardware: HardwareContext,
     pub runtime: RuntimeContext,
     pub assets: Assets,
-    pub theme: Theme,
     plugins: PluginList,
     events: Events,
     state: Option<State>
@@ -159,13 +159,10 @@ pub struct Context {
 impl Context {
     /// Creates a new `Context` instance and loads the default Pelican UI assets.
     pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Option<State>) -> Self {
-        let mut assets = Assets::new();
-        assets.include_assets(include_dir!("./resources"));
         Context {
             hardware,
             runtime,
-            theme: Theme::default(&mut assets),
-            assets,  
+            assets: Assets::new(),  
             plugins: PluginList::new(),
             events: Events::new(),    
             state
@@ -212,26 +209,6 @@ impl Context {
     // }
 }
 
-/// A trait for registering plugins.
-///
-/// Implementors should return a collection of plugins to be stored in the [`Context`].
-///
-/// # Example
-/// ```
-/// struct MyPlugin;
-/// impl Plugin for MyPlugin { /* ... */ }
-///
-/// struct MyApp;
-/// impl Plugins for MyApp {
-///     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>> {
-///         vec![Box::new(MyPlugin)]
-///     }
-/// }
-/// ```
-pub trait Plugins {
-    /// Returns a list of plugins for the application.
-    fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>>;
-}
 
 /// Allow [`Context`] to provide mutable access to the [`Atlas`].
 impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.assets.atlas}}
@@ -252,7 +229,7 @@ impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.ass
 /// }
 /// ```
 pub trait Application {
-    fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
+    fn new(ctx: &mut Context) -> impl Future<Output = impl Drawable>;
     fn services() -> ServiceList {ServiceList::default()}
     fn plugins(_ctx: &mut Context) -> Vec<Box<dyn Plugin>> { vec![] }
 }
@@ -267,7 +244,6 @@ pub mod __private {
     
     use crate::{_Drawable, Application, Canvas, CanvasItem, Context, Drawable, EventHandler, Lifetime, Scale, SizedBranch, TickEvent};
     use crate::layout::Scaling;
-
 
     /// Provide [`Services`] for [`PelicanEngine`] by deferring to the application type.
     impl<A: Application> Services for PelicanEngine<A> {
@@ -306,7 +282,7 @@ pub mod __private {
             let plugins = A::plugins(&mut context);
             context.plugins = plugins.into_iter().map(|p| ((*p).type_id(), p)).collect();
             let mut application = A::new(&mut context).await;
-            let size_request = _Drawable::request_size(&*application, &mut context);
+            let size_request = _Drawable::request_size(&application, &mut context);
             let sized_app = application.build(&mut context, screen, size_request);
             ctx.state = context.state.take();
             PelicanEngine{
@@ -316,7 +292,7 @@ pub mod __private {
                 screen,
                 context,
                 sized_app,
-                application,
+                application: Box::new(application),
                 event_handler: EventHandler::new(),
                 items: Vec::new()
             }

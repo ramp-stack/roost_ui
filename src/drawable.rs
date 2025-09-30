@@ -7,6 +7,7 @@ use std::any::Any;
 use super::{Context, resources};
 use super::events::*;
 use super::layout::{SizeRequest, Area};
+use crate::events::OnEvent;
 
 pub use wgpu_canvas::{Text, Font, Span, Align, Cursor, Color};
 pub use wgpu_canvas::Shape as ShapeType;
@@ -33,6 +34,22 @@ pub trait Drawable: _Drawable + Debug + Any {
     fn into_any(self: Box<Self>) -> Box<dyn Any>;
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
+impl _Drawable for Box<dyn Drawable> {
+    fn request_size(&self, ctx: &mut Context) -> RequestBranch {_Drawable::request_size(&**self, ctx)}
+    fn build(&mut self, ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {
+        _Drawable::build(&mut **self, ctx, size, request)
+    }
+    fn draw(&mut self, sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
+        _Drawable::draw(&mut **self, sized, offset, bound)
+    }
+
+    fn name(&self) -> String {_Drawable::name(&**self)}
+
+    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, event: Box<dyn Event>) {
+        _Drawable::event(&mut **self, ctx, sized, event)
+    }
 }
 
 impl<D: _Drawable + Debug + Any> Drawable for D {
@@ -171,4 +188,17 @@ impl<C: Component + ?Sized + 'static + OnEvent> _Drawable for C {
             );
         }
     }
+}
+
+#[macro_export]
+macro_rules! drawables {
+    ( $( $x:expr ),* $(,)? ) => {
+        {
+            let mut v: Vec<Box<dyn mustache::drawable::Drawable>> = Vec::new();
+            $(
+                v.push(Box::new($x) as Box<dyn mustache::drawable::Drawable>);
+            )*
+            v
+        }
+    };
 }
