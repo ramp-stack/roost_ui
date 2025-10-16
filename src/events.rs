@@ -82,6 +82,13 @@ impl Event for MouseEvent {
                     passed = true;
                     (position.0 - offset.0, position.1 - offset.1)
             })).flatten());
+
+            // let position = self.position.map(|position| {
+            //     if !passed { passed = true; }
+            //     ((position.0 - offset.0).clamp(0.0, size.0),
+            //     (position.1 - offset.1).clamp(0.0, size.1))
+            // });
+
             Some(Box::new(MouseEvent{position, state: self.state}) as Box<dyn Event>)
         }).collect::<Vec<_>>().into_iter().rev().collect()
     }

@@ -83,6 +83,11 @@ impl SizeRequest {
         SizeRequest::new(self.min_width, self.min_height + h, self.max_width, self.max_height + h)
     }
 
+    /// Returns a new request with height decreased.
+    pub fn remove_height(&self, h: f32) -> SizeRequest {
+        SizeRequest::new(self.min_width, self.min_height - h, self.max_width, self.max_height - h)
+    }
+
     /// Returns the combined maximum of two requests.
     pub fn max(&self, other: &Self) -> SizeRequest {
         SizeRequest::new(

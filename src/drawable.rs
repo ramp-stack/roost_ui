@@ -83,6 +83,42 @@ impl _Drawable for Text {
     }
 }
 
+impl<D: _Drawable + Debug + Any> _Drawable for Option<D> {
+    fn request_size(&self, ctx: &mut Context) -> RequestBranch {
+        match self {
+            Some(d) => d.request_size(ctx),
+            None => RequestBranch(SizeRequest::fixed((0.0, 0.0)), vec![]),
+        }
+    }
+
+    fn build(&mut self, ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {
+        match self {
+            Some(d) => d.build(ctx, size, request),
+            None => SizedBranch(size, vec![]),
+        }
+    }
+
+    fn draw(&mut self, sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
+        match self {
+            Some(d) => d.draw(sized, offset, bound),
+            None => vec![],
+        }
+    }
+
+    fn name(&self) -> String {
+        match self {
+            Some(d) => d.name(),
+            None => "None".to_string(),
+        }
+    }
+
+    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, event: Box<dyn Event>) {
+        if let Some(d) = self {
+            d.event(ctx, sized, event);
+        }
+    }
+}
+
 
 /// A basic drawable shape with a fill color.
 #[derive(Clone, Copy, Debug)]
