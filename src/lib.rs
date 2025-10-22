@@ -13,6 +13,8 @@
 //!
 //! Check out the [website](http://ramp-stack.com/pelican_ui) for more information, the [Quick Start Guide](http://ramp-stack.com/pelican_ui/getting_started) to set up your first app, and join the [community](https://discord.gg/cTRaRbUZ) if you have questions or want to share ideas.
 
+extern crate self as mustache;
+
 use std::collections::BTreeMap;
 use std::any::TypeId;
 
@@ -39,6 +41,8 @@ use events::{EventHandler, Events, Event, TickEvent};
 
 pub mod layout;
 use layout::Scale;
+pub mod layouts;
+pub mod emitters;
 
 pub mod drawable;
 pub use drawable::Component;

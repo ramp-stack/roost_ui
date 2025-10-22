@@ -269,3 +269,15 @@ impl EventHandler {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub enum Button {
+    Pressed(bool),
+    Hover(bool),
+}
+
+impl Event for Button {
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    }
+}
