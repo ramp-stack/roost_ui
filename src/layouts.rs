@@ -652,10 +652,17 @@ impl Enum {
         Enum(Stack::default(), items.into_iter().collect())
     }
 
-    /// Displays only the item matching the given name and hides all others.
+    /// Displays only the item matching the given name and hides all others. 
+    /// If the key doesn't exist, defaults to the first item.
     pub fn display(&mut self, name: &str) {
-        for (key, opt_item) in self.1.iter_mut() {
-            opt_item.display(key == name);
+        let key = match self.1.contains_key(name) { 
+            true => name.to_string(),
+            false => self.1.keys().next().unwrap().clone()
+        };
+
+        for (k, v) in self.1.iter_mut() {
+            v.display(*k == key);
         }
     }
+
 }

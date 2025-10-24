@@ -270,13 +270,56 @@ impl EventHandler {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Button {
     Pressed(bool),
     Hover(bool),
 }
 
 impl Event for Button {
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct SelectableEvent(pub uuid::Uuid, pub uuid::Uuid);
+
+impl Event for SelectableEvent {
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Selectable(pub bool);
+
+impl Event for Selectable {
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Slider {
+    Start(f32),
+    Moved(f32),
+}
+
+impl Event for Slider {
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    }
+}
+
+/// Event used to focus active input field on mobile and enable editing of the text input content.
+#[derive(Debug, Clone)]
+pub enum InputField {
+    Select(uuid::Uuid, bool),
+    Submit,
+}
+
+impl Event for InputField {
     fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
         children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }

@@ -43,6 +43,7 @@ pub mod layout;
 use layout::Scale;
 pub mod layouts;
 pub mod emitters;
+pub mod interactions;
 
 pub mod drawable;
 pub use drawable::Component;
