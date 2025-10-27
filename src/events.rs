@@ -315,7 +315,7 @@ impl Event for Slider {
 /// Event used to focus active input field on mobile and enable editing of the text input content.
 #[derive(Debug, Clone)]
 pub enum InputField {
-    Select(uuid::Uuid, bool),
+    Select(bool),
     Submit,
 }
 

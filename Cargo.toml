@@ -8,7 +8,7 @@ documentation = "https://docs.rs/mustache"
 repository = "https://github.com/ramp-stack/mustache"
 
 [dependencies]
-uuid = { version = "1.16.0", features = ["v4", "js"] }
+uuid = { version = "1.16.0", features = ["v4", "v3", "js"] }
 maverick_os = {path="../maverick_os"}#"0.1.24"
 downcast-rs = "2.0.1"
 image = "0.25.6"
