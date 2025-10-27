@@ -216,11 +216,11 @@ impl<C: Component + ?Sized + 'static + OnEvent> _Drawable for C {
         }).collect()
     }
 
-    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, mut event: Box<dyn Event>) {
-        if OnEvent::on_event(self, ctx, &mut *event) {
-            let children = sized.1.iter().map(|(o, branch)| (*o, branch.0)).collect::<Vec<_>>();
-            event.pass(ctx, children).into_iter().zip(self.children_mut()).zip(sized.1).for_each(
-                |((e, child), branch)| if let Some(e) = e {child.event(ctx, branch.1, e);}
+    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, event: Box<dyn Event>) {
+        let children = sized.1.iter().map(|(o, branch)| (*o, branch.0)).collect::<Vec<_>>();
+        for event in OnEvent::on_event(self, ctx, event) {
+            event.pass(ctx, &children).into_iter().zip(self.children_mut()).zip(sized.1.iter()).for_each(
+                |((e, child), branch)| if let Some(e) = e {child.event(ctx, branch.1.clone(), e);}
             );
         }
     }
@@ -230,11 +230,9 @@ impl<C: Component + ?Sized + 'static + OnEvent> _Drawable for C {
 macro_rules! drawables {
     ( $( $x:expr ),* $(,)? ) => {
         {
-            let mut v: Vec<Box<dyn mustache::drawable::Drawable>> = Vec::new();
-            $(
-                v.push(Box::new($x) as Box<dyn mustache::drawable::Drawable>);
-            )*
-            v
+            vec![
+                $(Box::new($x) as Box<dyn mustache::drawable::Drawable>),*
+            ]
         }
     };
 }

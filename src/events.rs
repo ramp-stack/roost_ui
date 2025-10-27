@@ -9,12 +9,14 @@ use maverick_os::window::{Input, TouchPhase, ElementState, MouseScrollDelta, Tou
 pub use maverick_os::window::{NamedKey, Key, SmolStr};
 
 use downcast_rs::{Downcast, impl_downcast};
-
 pub type Events = std::collections::VecDeque<Box<dyn Event>>;
 
-pub trait OnEvent: Debug {
-    fn on_event(&mut self, _ctx: &mut Context, _event: &mut dyn Event) -> bool {true}
+pub trait OnEvent: Debug + Downcast {
+    fn on_event(&mut self, _ctx: &mut Context, event: Box<dyn Event>) -> Vec<Box<dyn Event>> {vec![event]}
 }
+
+type EventChildren = Vec<((f32, f32), (f32, f32))>;
+
 //Function for event to decide on weather to pass the event to a child, Event can also be modified for the child
 /// Implement the `Event` trait to allow a structure to be used in an event query.
 pub trait Event: Debug + Downcast {
@@ -23,11 +25,11 @@ pub trait Event: Debug + Downcast {
     fn pass(
         self: Box<Self>,
         _ctx: &mut Context,
-        children: Vec<((f32, f32), (f32, f32))>,
+        children: &EventChildren,
     ) -> Vec<Option<Box<dyn Event>>>;
 }
+impl_downcast!(Event);
 
-impl_downcast!(Event); 
 
 /// Represents the different states of the mouse in a [`MouseEvent`].
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -70,9 +72,9 @@ pub struct MouseEvent {
 }
 
 impl Event for MouseEvent {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
         let mut passed = false;
-        children.into_iter().rev().map(|(offset, size)| { // Reverse to click on the top most element
+        children.iter().rev().map(|(offset, size)| { // Reverse to click on the top most element
             let position = self.position.and_then(|position| (!passed).then(|| (
                 position.0 > offset.0 &&
                 position.0 < offset.0+size.0 &&
@@ -106,8 +108,8 @@ pub struct KeyboardEvent {
 }
 
 impl Event for KeyboardEvent {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
 }
 /// # Tick Event
@@ -116,8 +118,8 @@ impl Event for KeyboardEvent {
 #[derive(Debug, Clone, Copy)]
 pub struct TickEvent;
 impl Event for TickEvent {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(Box::new(*self) as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(Box::new(*self) as Box<dyn Event>)).collect()
     }
 }
 
@@ -270,6 +272,17 @@ impl EventHandler {
     }
 }
 
+#[macro_export]
+macro_rules! events {
+    ( $( $x:expr ),* $(,)? ) => {
+        {
+            vec![
+                $(Box::new($x) as Box<dyn Event>),*
+            ]
+        }
+    };
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Button {
     Pressed(bool),
@@ -277,8 +290,8 @@ pub enum Button {
 }
 
 impl Event for Button {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
 }
 
@@ -286,8 +299,8 @@ impl Event for Button {
 pub struct SelectableEvent(pub uuid::Uuid, pub uuid::Uuid);
 
 impl Event for SelectableEvent {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
 }
 
@@ -295,8 +308,8 @@ impl Event for SelectableEvent {
 pub struct Selectable(pub bool);
 
 impl Event for Selectable {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
 }
 
@@ -307,8 +320,8 @@ pub enum Slider {
 }
 
 impl Event for Slider {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
 }
 
@@ -320,7 +333,8 @@ pub enum InputField {
 }
 
 impl Event for InputField {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
 }
+

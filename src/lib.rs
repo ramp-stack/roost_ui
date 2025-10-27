@@ -39,11 +39,11 @@ use wgpu::Canvas;
 pub mod events;
 use events::{EventHandler, Events, Event, TickEvent};
 
+pub mod layouts;
 pub mod layout;
 use layout::Scale;
-pub mod layouts;
+
 pub mod emitters;
-pub mod interactions;
 
 pub mod drawable;
 pub use drawable::Component;
@@ -175,7 +175,7 @@ impl Context {
     }
 
     /// Adds an [`Event`] to the context's event queue to be triggered.
-    pub fn trigger_event(&mut self, event: impl Event) {
+    pub fn trigger_event(&mut self, event: impl Event + 'static) {
         self.events.push_back(Box::new(event));
     }
 
@@ -335,7 +335,7 @@ pub mod __private {
 
                         while let Some(event) = self.context.events.pop_front() {
                             if let Some(event) = event
-                                .pass(&mut self.context, vec![((0.0, 0.0), self.sized_app.0)])
+                                .pass(&mut self.context, &vec![((0.0, 0.0), self.sized_app.0)])
                                 .remove(0)
                             {
                                 for id in self.context.plugins.keys().copied().collect::<Vec<_>>() {

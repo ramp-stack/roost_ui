@@ -566,18 +566,18 @@ pub enum AdjustScrollEvent {
 }
 
 impl Event for AdjustScrollEvent {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.into_iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
 }
 
 /// A container pairing a layout with a drawable element.
 #[derive(Debug, Component)]
-pub struct Bin<L: Layout, D: Drawable + 'static>(pub L, pub D);
+pub struct Bin<L: Layout + 'static, D: Drawable + 'static>(pub L, pub D);
 
-impl<L: Layout, D: Drawable + 'static> OnEvent for Bin<L, D> {}
+impl<L: Layout + 'static, D: Drawable + 'static> OnEvent for Bin<L, D> {}
 
-impl<L: Layout, D: Drawable + 'static> Bin<L, D> {
+impl<L: Layout + 'static, D: Drawable + 'static> Bin<L, D> {
     pub fn inner(&mut self) -> &mut D {
         &mut self.1
     }
