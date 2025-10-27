@@ -4,26 +4,11 @@ use crate::{Context, Component};
 use crate::layouts::{Enum, Stack, Size, Offset, Padding};
 use crate::emitters;
 
-pub type InputField = emitters::Button<_InputField>;
-
-impl InputField {
-    pub fn new(
-        default: impl Drawable + 'static,
-        focus: impl Drawable + 'static,
-        hover: Option<impl Drawable + 'static>,
-        error: Option<impl Drawable + 'static>,
-        content: impl Drawable + 'static,
-        height: f32,
-        id: uuid::Uuid,
-    ) -> Self {
-        emitters::Button::_new(_InputField::new(default, focus, hover, error, content, height, id))
-    }
-}
 
 #[derive(Debug, Component)]
-pub struct _InputField(Stack, Enum, Box<dyn Drawable>, #[skip] pub bool, #[skip] bool, #[skip] pub uuid::Uuid);
+pub struct InputField(Stack, Enum, Box<dyn Drawable>, #[skip] pub bool, #[skip] bool, #[skip] pub uuid::Uuid);
 
-impl _InputField {
+impl InputField {
     pub fn new(
         default: impl Drawable + 'static,
         focus: impl Drawable + 'static,
@@ -42,27 +27,27 @@ impl _InputField {
         if let Some(h) = hover { items.push(("hover", Box::new(h))) }
         if let Some(e) = error { items.push(("error", Box::new(e))) }
 
-        _InputField(layout, Enum::new(items, "default"), Box::new(content), false, false, id)
+        InputField(layout, Enum::new(items, "default"), Box::new(content), false, false, id)
     }
 }
 
-impl OnEvent for _InputField {
+impl OnEvent for InputField {
     fn on_event(&mut self, ctx: &mut Context, event: &mut dyn Event) -> bool {
-        if let Some(event) = event.downcast_ref::<events::Button>() {
+        if let Some(event) = emitters::Button::get(event) {
             let default = if self.3 {"error"} else {"default"};
             match event {
                 events::Button::Hover(true) => self.1.display("hover"),
-                events::Button::Hover(false) => self.1.display(default),
-                events::Button::Pressed(false) => self.1.display(default),
                 events::Button::Pressed(true) => {
                     ctx.hardware.haptic();
                     self.1.display("focus");
-                }
-            }
-
-            if let events::Button::Pressed(x) = event {
-                ctx.trigger_event(events::InputField::Select(self.5, *x));
-                self.4 = *x;
+                    ctx.trigger_event(events::InputField::Select(self.5, true));
+                    self.4 = true;
+                },
+                events::Button::Pressed(false) => {
+                    ctx.trigger_event(events::InputField::Select(self.5, false));
+                    self.4 = false;
+                },
+                _ => self.1.display(default),
             }
         } else if let Some(KeyboardEvent{state: KeyboardState::Pressed, key: _}) = event.downcast_ref() {
             return self.4;
