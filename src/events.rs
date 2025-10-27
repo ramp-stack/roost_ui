@@ -327,12 +327,14 @@ impl Event for Slider {
 
 /// Event used to focus active input field on mobile and enable editing of the text input content.
 #[derive(Debug, Clone)]
-pub enum InputField {
+pub enum TextInput {
     Select(bool),
     Submit,
+    Hover(bool),
+    Pressed(bool),
 }
 
-impl Event for InputField {
+impl Event for TextInput {
     fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
         children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
     }
