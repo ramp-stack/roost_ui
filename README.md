@@ -1,9 +1,9 @@
-# Pelican UI
+# roost UI
 
-**Pelican UI** is a lightweight, modular UI/UX crate built specifically for the **RAMP stack** — a Rust-first framework for building fast, interactive applications with clean architecture and high performance.
+**roost UI** is a lightweight, modular UI crate built specifically for the **RAMP stack** — a Rust-first framework for building fast, interactive applications with clean architecture and high performance.
 
 # Documentation
-Full documentation is available at **https://docs.rs/pelican-ui**
+Full documentation is available at **https://docs.rs/roost_ui**
 
 # Getting Started
 
