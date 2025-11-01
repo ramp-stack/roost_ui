@@ -231,7 +231,7 @@ macro_rules! drawables {
     ( $( $x:expr ),* $(,)? ) => {
         {
             vec![
-                $(Box::new($x) as Box<dyn mustache::drawable::Drawable>),*
+                $(Box::new($x) as Box<dyn roost::drawable::Drawable>),*
             ]
         }
     };

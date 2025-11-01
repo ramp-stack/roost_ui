@@ -1,19 +1,10 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/pelican_ui_std/main/logo.png")]
 
-//! Pelican UI
+//! roost is a fast, cross-platform UI renderer.
 //!
-//! Pelican UI is a fast, cross-platform UI renderer and component system for building beautiful and consistent apps.
-//!
-//! Key features include:
-//! - **Theme system**: Easily customize colors, fonts, and more through a central [`Theme`] object.
-//! - **Simple components & layouts**: Build UIs quickly with a minimal and intuitive API.
-//! - **High performance**: Optimized for speed, making it suitable for both lightweight and complex applications.
-//! - **Cross-platform support**: Works seamlessly on desktop, web, and mobile platforms.
-//! - **Standard components**: Access ready-to-use components via the [`pelican_ui_std`](<https://docs.rs/crate/pelican_ui_std/latest>) crate built on top of Pelican UI.
-//!
-//! Check out the [website](http://ramp-stack.com/pelican_ui) for more information, the [Quick Start Guide](http://ramp-stack.com/pelican_ui/getting_started) to set up your first app, and join the [community](https://discord.gg/cTRaRbUZ) if you have questions or want to share ideas.
+//! Check out the [website](http://ramp-stack.com/roost) for more information, the [Quick Start Guide](http://ramp-stack.com/roost/getting_started) to set up your first app.
 
-extern crate self as mustache;
+extern crate self as roost;
 
 use std::collections::BTreeMap;
 use std::any::TypeId;
@@ -43,6 +34,12 @@ pub mod layouts;
 pub mod layout;
 use layout::Scale;
 
+/// # roost emitters
+///
+/// Emitters are the interactive bridge between user input and component behavior.
+///
+/// Each emitter listens for raw input events and translates them
+/// into meaningful, component-specific events.
 pub mod emitters;
 
 pub mod drawable;

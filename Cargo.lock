@@ -2027,7 +2027,9 @@ dependencies = [
 
 [[package]]
 name = "maverick_os"
-version = "0.1.24"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f81d7805f4094ebf18d0dc3f2f20fa0390e38406a3d02a7b8064acbb0f0b25f5"
 dependencies = [
  "active_rusqlite",
  "air",
@@ -2162,22 +2164,6 @@ checksum = "ddd32fa8935aeadb8a8a6b6b351e40225570a37c43de67690383d87ef170cd08"
 dependencies = [
  "num-traits",
  "pxfm",
-]
-
-[[package]]
-name = "mustache"
-version = "1.1.19"
-dependencies = [
- "downcast-rs 2.0.2",
- "image 0.25.8",
- "include_dir",
- "maverick_os",
- "nsvg",
- "pelican_ui_proc",
- "serde",
- "uuid",
- "wgpu",
- "wgpu_canvas",
 ]
 
 [[package]]
@@ -3521,6 +3507,22 @@ name = "rgb"
 version = "0.8.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c6a884d2998352bb4daf0183589aec883f16a6da1f4dde84d8e2e9a5409a1ce"
+
+[[package]]
+name = "roost"
+version = "1.1.19"
+dependencies = [
+ "downcast-rs 2.0.2",
+ "image 0.25.8",
+ "include_dir",
+ "maverick_os",
+ "nsvg",
+ "pelican_ui_proc",
+ "serde",
+ "uuid",
+ "wgpu",
+ "wgpu_canvas",
+]
 
 [[package]]
 name = "rusqlite"

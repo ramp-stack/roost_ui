@@ -53,7 +53,6 @@ pub enum Size {
     Custom(Box<CustomFunc>),
 }
 
-
 impl Size {
     pub fn custom(func: impl Fn(Vec<(f32, f32)>) -> (f32, f32) + 'static) -> Self {
         Size::Custom(Box::new(func))

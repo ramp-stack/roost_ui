@@ -1,11 +1,11 @@
 [package]
-name = "mustache"
+name = "roost"
 version = "1.1.19"
 edition = "2024"
 license = "BSD-3-Clause"
 description = "Pelican UI"
-documentation = "https://docs.rs/mustache"
-repository = "https://github.com/ramp-stack/mustache"
+documentation = "https://docs.rs/roost"
+repository = "https://github.com/ramp-stack/roost"
 
 [dependencies]
 uuid = { version = "1.16.0", features = ["v4", "v3", "js"] }

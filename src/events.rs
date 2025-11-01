@@ -295,17 +295,12 @@ impl Event for Button {
     }
 }
 
+/// Events emitted by the [`Selectable`](crate::emitters::Selectable) emmiter object.
 #[derive(Debug, Copy, Clone)]
-pub struct SelectableEvent(pub uuid::Uuid, pub uuid::Uuid);
-
-impl Event for SelectableEvent {
-    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
-        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
-    }
+pub enum Selectable {
+    Pressed(uuid::Uuid, uuid::Uuid),
+    Selected(bool)
 }
-
-#[derive(Debug, Copy, Clone)]
-pub struct Selectable(pub bool);
 
 impl Event for Selectable {
     fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32), (f32, f32))>) -> Vec<Option<Box<dyn Event>>> {
@@ -313,6 +308,7 @@ impl Event for Selectable {
     }
 }
 
+/// Events emitted by the [`Slider`](crate::emitters::Slider) emmiter object.
 #[derive(Debug, Clone, Copy)]
 pub enum Slider {
     Start(f32),
@@ -325,13 +321,11 @@ impl Event for Slider {
     }
 }
 
-/// Event used to focus active input field on mobile and enable editing of the text input content.
+/// Events emitted by the [`TextInput`](crate::emitters::TextInput) emmiter object.
 #[derive(Debug, Clone)]
 pub enum TextInput {
-    Select(bool),
-    Submit,
     Hover(bool),
-    Pressed(bool),
+    Focused(bool),
 }
 
 impl Event for TextInput {
