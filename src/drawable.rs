@@ -7,6 +7,7 @@ use std::any::Any;
 use super::{Context, resources};
 use super::events::*;
 use super::layout::{SizeRequest, Area};
+use crate::events::OnEvent;
 
 pub use wgpu_canvas::{Text, Font, Span, Align, Cursor, Color};
 pub use wgpu_canvas::Shape as ShapeType;
@@ -33,6 +34,22 @@ pub trait Drawable: _Drawable + Debug + Any {
     fn into_any(self: Box<Self>) -> Box<dyn Any>;
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
+impl _Drawable for Box<dyn Drawable> {
+    fn request_size(&self, ctx: &mut Context) -> RequestBranch {_Drawable::request_size(&**self, ctx)}
+    fn build(&mut self, ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {
+        _Drawable::build(&mut **self, ctx, size, request)
+    }
+    fn draw(&mut self, sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
+        _Drawable::draw(&mut **self, sized, offset, bound)
+    }
+
+    fn name(&self) -> String {_Drawable::name(&**self)}
+
+    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, event: Box<dyn Event>) {
+        _Drawable::event(&mut **self, ctx, sized, event)
+    }
 }
 
 impl<D: _Drawable + Debug + Any> Drawable for D {
@@ -63,6 +80,42 @@ impl _Drawable for Text {
 
     fn draw(&mut self, _sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
         vec![(CanvasArea(offset, Some(bound)), CanvasItem::Text(self.clone()))]
+    }
+}
+
+impl<D: _Drawable + Debug + Any> _Drawable for Option<D> {
+    fn request_size(&self, ctx: &mut Context) -> RequestBranch {
+        match self {
+            Some(d) => d.request_size(ctx),
+            None => RequestBranch(SizeRequest::fixed((0.0, 0.0)), vec![]),
+        }
+    }
+
+    fn build(&mut self, ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {
+        match self {
+            Some(d) => d.build(ctx, size, request),
+            None => SizedBranch(size, vec![]),
+        }
+    }
+
+    fn draw(&mut self, sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
+        match self {
+            Some(d) => d.draw(sized, offset, bound),
+            None => vec![],
+        }
+    }
+
+    fn name(&self) -> String {
+        match self {
+            Some(d) => d.name(),
+            None => "None".to_string(),
+        }
+    }
+
+    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, event: Box<dyn Event>) {
+        if let Some(d) = self {
+            d.event(ctx, sized, event);
+        }
     }
 }
 
@@ -163,12 +216,23 @@ impl<C: Component + ?Sized + 'static + OnEvent> _Drawable for C {
         }).collect()
     }
 
-    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, mut event: Box<dyn Event>) {
-        if OnEvent::on_event(self, ctx, &mut *event) {
-            let children = sized.1.iter().map(|(o, branch)| (*o, branch.0)).collect::<Vec<_>>();
-            event.pass(ctx, children).into_iter().zip(self.children_mut()).zip(sized.1).for_each(
-                |((e, child), branch)| if let Some(e) = e {child.event(ctx, branch.1, e);}
+    fn event(&mut self, ctx: &mut Context, sized: SizedBranch, event: Box<dyn Event>) {
+        let children = sized.1.iter().map(|(o, branch)| (*o, branch.0)).collect::<Vec<_>>();
+        for event in OnEvent::on_event(self, ctx, event) {
+            event.pass(ctx, &children).into_iter().zip(self.children_mut()).zip(sized.1.iter()).for_each(
+                |((e, child), branch)| if let Some(e) = e {child.event(ctx, branch.1.clone(), e);}
             );
         }
     }
+}
+
+#[macro_export]
+macro_rules! drawables {
+    ( $( $x:expr ),* $(,)? ) => {
+        {
+            vec![
+                $(Box::new($x) as Box<dyn roost::drawable::Drawable>),*
+            ]
+        }
+    };
 }

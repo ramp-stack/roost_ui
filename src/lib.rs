@@ -1,17 +1,10 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/pelican_ui_std/main/logo.png")]
 
-//! Pelican UI
+//! roost is a fast, cross-platform UI renderer.
 //!
-//! Pelican UI is a fast, cross-platform UI renderer and component system for building beautiful and consistent apps.
-//!
-//! Key features include:
-//! - **Theme system**: Easily customize colors, fonts, and more through a central [`Theme`] object.
-//! - **Simple components & layouts**: Build UIs quickly with a minimal and intuitive API.
-//! - **High performance**: Optimized for speed, making it suitable for both lightweight and complex applications.
-//! - **Cross-platform support**: Works seamlessly on desktop, web, and mobile platforms.
-//! - **Standard components**: Access ready-to-use components via the [`pelican_ui_std`](<https://docs.rs/crate/pelican_ui_std/latest>) crate built on top of Pelican UI.
-//!
-//! Check out the [website](http://ramp-stack.com/pelican_ui) for more information, the [Quick Start Guide](http://ramp-stack.com/pelican_ui/getting_started) to set up your first app, and join the [community](https://discord.gg/cTRaRbUZ) if you have questions or want to share ideas.
+//! Check out the [website](http://ramp-stack.com/roost) for more information, the [Quick Start Guide](http://ramp-stack.com/roost/getting_started) to set up your first app.
+
+extern crate self as roost;
 
 use std::collections::BTreeMap;
 use std::any::TypeId;
@@ -24,6 +17,8 @@ pub use maverick_os::{
     Services, 
     ServiceList,
     self,
+    IS_WEB, 
+    IS_MOBILE
 };
 
 pub use pelican_ui_proc::Component;
@@ -35,24 +30,32 @@ use wgpu::Canvas;
 pub mod events;
 use events::{EventHandler, Events, Event, TickEvent};
 
+pub mod layouts;
 pub mod layout;
 use layout::Scale;
 
+/// # roost emitters
+///
+/// Emitters are the interactive bridge between user input and component behavior.
+///
+/// Each emitter listens for raw input events and translates them
+/// into meaningful, component-specific events.
+pub mod emitters;
+
 pub mod drawable;
+pub use drawable::Component;
 use drawable::{Drawable, _Drawable, SizedBranch};
+
+//pub mod components;
+// pub mod config;
 
 pub mod resources {
     pub use wgpu_canvas::{Image, Font};
 }
 
-pub mod theme;
-use theme::Theme;
-
 type PluginList = BTreeMap<TypeId, Box<dyn Plugin>>;
 
 pub trait Plugin: Downcast {
-    fn new(ctx: &mut Context) -> Self where Self: Sized;
-
     fn event(&mut self, _ctx: &mut Context, _event: &dyn Event) {}
 }
 impl_downcast!(Plugin);
@@ -111,7 +114,7 @@ impl Assets {
 
     /// Loads the contents of the specified file from the search directories, returning its bytes if found.
     pub fn load_file(&self, file: &str) -> Option<Vec<u8>> {
-        self.dirs.iter().rev().find_map(|dir|
+        self.dirs.iter().find_map(|dir|
             dir.find(file).ok().and_then(|mut f|
                 f.next().and_then(|f|
                     if let DirEntry::File(f) = f {
@@ -150,7 +153,6 @@ pub struct Context {
     pub hardware: HardwareContext,
     pub runtime: RuntimeContext,
     pub assets: Assets,
-    pub theme: Theme,
     plugins: PluginList,
     events: Events,
     state: Option<State>
@@ -159,13 +161,10 @@ pub struct Context {
 impl Context {
     /// Creates a new `Context` instance and loads the default Pelican UI assets.
     pub fn new(hardware: HardwareContext, runtime: RuntimeContext, state: Option<State>) -> Self {
-        let mut assets = Assets::new();
-        assets.include_assets(include_dir!("./resources"));
         Context {
             hardware,
             runtime,
-            theme: Theme::default(&mut assets),
-            assets,  
+            assets: Assets::new(),  
             plugins: PluginList::new(),
             events: Events::new(),    
             state
@@ -173,7 +172,7 @@ impl Context {
     }
 
     /// Adds an [`Event`] to the context's event queue to be triggered.
-    pub fn trigger_event(&mut self, event: impl Event) {
+    pub fn trigger_event(&mut self, event: impl Event + 'static) {
         self.events.push_back(Box::new(event));
     }
 
@@ -212,26 +211,6 @@ impl Context {
     // }
 }
 
-/// A trait for registering plugins.
-///
-/// Implementors should return a collection of plugins to be stored in the [`Context`].
-///
-/// # Example
-/// ```
-/// struct MyPlugin;
-/// impl Plugin for MyPlugin { /* ... */ }
-///
-/// struct MyApp;
-/// impl Plugins for MyApp {
-///     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>> {
-///         vec![Box::new(MyPlugin)]
-///     }
-/// }
-/// ```
-pub trait Plugins {
-    /// Returns a list of plugins for the application.
-    fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>>;
-}
 
 /// Allow [`Context`] to provide mutable access to the [`Atlas`].
 impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.assets.atlas}}
@@ -252,7 +231,7 @@ impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.ass
 /// }
 /// ```
 pub trait Application {
-    fn new(ctx: &mut Context) -> impl Future<Output = Box<dyn Drawable>>;
+    fn new(ctx: &mut Context) -> impl Future<Output = impl Drawable>;
     fn services() -> ServiceList {ServiceList::default()}
     fn plugins(_ctx: &mut Context) -> Vec<Box<dyn Plugin>> { vec![] }
 }
@@ -267,7 +246,6 @@ pub mod __private {
     
     use crate::{_Drawable, Application, Canvas, CanvasItem, Context, Drawable, EventHandler, Lifetime, Scale, SizedBranch, TickEvent};
     use crate::layout::Scaling;
-
 
     /// Provide [`Services`] for [`PelicanEngine`] by deferring to the application type.
     impl<A: Application> Services for PelicanEngine<A> {
@@ -306,7 +284,7 @@ pub mod __private {
             let plugins = A::plugins(&mut context);
             context.plugins = plugins.into_iter().map(|p| ((*p).type_id(), p)).collect();
             let mut application = A::new(&mut context).await;
-            let size_request = _Drawable::request_size(&*application, &mut context);
+            let size_request = _Drawable::request_size(&application, &mut context);
             let sized_app = application.build(&mut context, screen, size_request);
             ctx.state = context.state.take();
             PelicanEngine{
@@ -316,7 +294,7 @@ pub mod __private {
                 screen,
                 context,
                 sized_app,
-                application,
+                application: Box::new(application),
                 event_handler: EventHandler::new(),
                 items: Vec::new()
             }
@@ -354,7 +332,7 @@ pub mod __private {
 
                         while let Some(event) = self.context.events.pop_front() {
                             if let Some(event) = event
-                                .pass(&mut self.context, vec![((0.0, 0.0), self.sized_app.0)])
+                                .pass(&mut self.context, &vec![((0.0, 0.0), self.sized_app.0)])
                                 .remove(0)
                             {
                                 for id in self.context.plugins.keys().copied().collect::<Vec<_>>() {
