@@ -1,4 +1,4 @@
-#![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/roost_ui/main/logo.png")]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/roost_ui/master/logo.png")]
 
 //! roost is a fast, cross-platform UI renderer.
 //!

@@ -1,7 +1,8 @@
-use crate::events::{Event, MouseEvent, MouseState, KeyboardEvent, KeyboardState};
+use crate::events::{Event, TickEvent, MouseEvent, MouseState, KeyboardEvent, KeyboardState};
 use crate::{events, Drawable, Context, Component};
 use crate::events::OnEvent;
 use crate::layouts::Stack;
+use std::time::Duration;
 
 /// The [`Button`] emitter wraps a drawable component
 /// and converts mouse input into a small set of semantic button states:
@@ -150,3 +151,91 @@ impl<D: Drawable + 'static> OnEvent for TextInput<D> {
         vec![event]
     }
 }
+
+#[derive(Debug, Component)]
+pub struct Scrollable<D: Drawable + 'static> {
+    layout: Stack,
+    pub inner: D,
+    #[skip] touching: bool,
+    #[skip] start_touch: Option<(f32, f32)>,
+    #[skip] mouse: (f32, f32),
+    #[skip] scroll: Option<(f32, f32)>,
+    #[skip] time: Option<Duration>,
+    #[skip] speed: Option<f32>,
+}
+impl<D: Drawable + 'static> Scrollable<D> {
+    pub fn new(child: D) -> Self { 
+        Scrollable {
+            layout: Stack::default(),
+            inner: child,
+            touching: false,
+            start_touch: None,
+            mouse: (0.0, 0.0),
+            scroll: None,
+            time: None,
+            speed: None,
+        }
+    }
+}
+
+impl<D: Drawable + 'static> OnEvent for Scrollable<D> {
+    fn on_event(&mut self, ctx: &mut Context, event: Box<dyn Event>) -> Vec<Box<dyn Event>> { 
+        if maverick_os::IS_MOBILE {
+            if let Some(MouseEvent{position: Some(position), state}) = event.downcast_ref::<MouseEvent>() {
+                match state {
+                    MouseState::Pressed => {
+                        self.scroll = Some(*position);
+                        self.scroll = Some(*position);
+                        self.touching = true;
+                    }, 
+                    MouseState::Moved => {
+                        self.mouse = *position;
+                    }, 
+                    MouseState::Released => {
+                        self.touching = false;
+                    },
+                    MouseState::Scroll(..) => {
+                        self.scroll = Some(*position);
+                    }, 
+                }
+                self.mouse = *position;
+            } else if event.downcast_ref::<TickEvent>().is_some() {
+                if !self.touching {
+                    if let Some(time) = self.time {
+                        match &mut self.speed {
+                            Some(speed) => {
+                                *speed *= 0.92;
+                                if speed.abs() < 0.1 {
+                                    self.time = None;
+                                    self.speed = None;
+                                    self.start_touch = None;
+                                    return vec![event];
+                                }
+                            }
+                            None => {
+                                let start_y = self.start_touch.unwrap_or((0.0, 0.0)).1;
+                                let end_y = self.scroll.unwrap_or((0.0, 0.0)).1;
+                                let y_traveled = end_y - start_y;
+                                let time_secs = time.as_secs_f32();
+                                self.speed = Some(-((y_traveled / time_secs) * 0.05));
+                            }
+                        }
+
+                        if let Some(speed) = self.speed {
+                            let state = (speed.abs() > 0.01).then_some(
+                                MouseState::Scroll(0.0, speed)
+                            );
+
+                            if let Some(s) = state {
+                                ctx.trigger_event(MouseEvent { position: Some(self.mouse), state: s });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        vec![event]
+    }
+}
+
+

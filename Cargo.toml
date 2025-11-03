@@ -1,6 +1,6 @@
 [package]
 name = "roost_ui"
-version = "2.0.2"
+version = "2.0.3"
 edition = "2024"
 license = "BSD-3-Clause"
 description = "roost UI"
@@ -9,7 +9,7 @@ repository = "https://github.com/ramp-stack/roost"
 
 [dependencies]
 uuid = { version = "1.16.0", features = ["v4", "v3", "js"] }
-maverick_os = "0.2.3"
+maverick_os = { version = "0.7.4"} #"0.2.3"
 downcast-rs = "2.0.1"
 image = "0.25.6"
 nsvg = "0.5.1"
