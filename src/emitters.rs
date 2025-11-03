@@ -153,7 +153,41 @@ impl<D: Drawable + 'static> OnEvent for TextInput<D> {
 }
 
 #[derive(Debug, Component)]
-pub struct Scrollable<D: Drawable + 'static> {
+pub struct Scrollable<D: Drawable + 'static>(Stack, pub D, #[skip] (f32, f32));
+
+impl<D: Drawable + 'static> Scrollable<D> {
+    pub fn new(child: D) -> emitters::Momentum<Self> {
+        emitters::Momentum::new(Scrollable(Stack::default(), child, (0.0, 0.0)))
+    }
+}
+
+impl<D: Drawable + 'static> OnEvent for Scrollable<D> {
+    fn on_event(&mut self, _ctx: &mut Context, event: Box<dyn Event>) -> Vec<Box<dyn Event>> {
+        if let Some(MouseEvent{position: Some(position), state}) = event.downcast_ref::<events::MouseEvent>() {
+            match state {
+                MouseState::Pressed => {
+                    self.2 = *position;
+                    return Vec::new();
+                },
+                MouseState::Released => {
+                    if (position.1 - self.2.1).abs() < 5.0 {
+                        return vec![Box::new(MouseEvent{position: Some(*position), state: MouseState::Pressed}) as Box<dyn Event>];
+                    }
+
+                    return Vec::new();
+                }
+                _ => {}
+            }
+        } 
+
+        vec![event]
+    }
+}
+
+
+
+#[derive(Debug, Component)]
+pub struct Momentum<D: Drawable + 'static> {
     layout: Stack,
     pub inner: D,
     #[skip] touching: bool,
@@ -163,9 +197,9 @@ pub struct Scrollable<D: Drawable + 'static> {
     #[skip] time: Option<Duration>,
     #[skip] speed: Option<f32>,
 }
-impl<D: Drawable + 'static> Scrollable<D> {
+impl<D: Drawable + 'static> Momentum<D> {
     pub fn new(child: D) -> Self { 
-        Scrollable {
+        Momentum {
             layout: Stack::default(),
             inner: child,
             touching: false,
@@ -178,7 +212,7 @@ impl<D: Drawable + 'static> Scrollable<D> {
     }
 }
 
-impl<D: Drawable + 'static> OnEvent for Scrollable<D> {
+impl<D: Drawable + 'static> OnEvent for Momentum<D> {
     fn on_event(&mut self, ctx: &mut Context, event: Box<dyn Event>) -> Vec<Box<dyn Event>> { 
         if maverick_os::IS_MOBILE {
             if let Some(MouseEvent{position: Some(position), state}) = event.downcast_ref::<MouseEvent>() {
