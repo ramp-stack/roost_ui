@@ -275,7 +275,7 @@ pub mod __private {
         /// - Constructs an application via [`Application::new`].
         /// - Registers plugins returned by [`Application::plugins`].
         async fn new(ctx: &mut maverick_os::Context) -> Self {
-            ctx.hardware.register_notifs();
+            ctx.hardware.notifications().register();
             let size = ctx.window.size;
             let (canvas, size) = Canvas::new(ctx.window.handle.clone(), size.0, size.1).await;
             let scale = Scale(ctx.window.scale_factor);
