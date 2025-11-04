@@ -3018,17 +3018,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "pelican_ui_proc"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d908c9fefc31e4d85cc95b2cc8d8b2164442b7fabeb4ee34023150e7a60b7366"
-dependencies = [
- "proc-macro2 1.0.101",
- "quote 1.0.40",
- "syn 2.0.106",
-]
-
-[[package]]
 name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3519,7 +3508,6 @@ dependencies = [
  "include_dir",
  "maverick_os",
  "nsvg",
- "pelican_ui_proc",
  "serde",
  "uuid",
  "wgpu",
