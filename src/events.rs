@@ -1,8 +1,5 @@
 use crate::layout::Scale;
 use crate::Context;
-
-use std::time::Duration;
-use std::time::Instant;
 use std::fmt::Debug;
 
 use maverick_os::window::{Input, TouchPhase, ElementState, MouseScrollDelta, Touch};
@@ -40,8 +37,6 @@ pub enum MouseState {
     Moved, 
     /// The mouse button was released.
     Released,
-    /// The mouse was released after a long time.
-    ReleasedLong,
     /// The mouse was scrolled.
     /// 
     /// The first value is the horizontal scroll amount (x-axis),
@@ -125,87 +120,31 @@ impl Event for TickEvent {
 
 pub(crate) struct EventHandler {
     touching: bool,
-    start_touch: Option<(f32, f32)>,
     mouse: (f32, f32),
     scroll: Option<(f32, f32)>,
-    hold: Option<Instant>,
-    time: Option<Duration>,
-    speed: Option<f32>,
 }
 
 impl EventHandler {
     pub fn new() -> Self {EventHandler{
         touching: false,
-        start_touch: None,
         mouse: (0.0, 0.0),
         scroll: None,
-        hold: None,
-        time: None,
-        speed: None,
     }}
 
     pub fn on_input(&mut self, scale: &Scale, input: Input) -> Option<Box<dyn Event>> {
         match input {
-            Input::Tick => {
-                if !self.touching {
-                    if let Some(time) = self.time {
-                        match &mut self.speed {
-                            Some(speed) => {
-                                *speed *= 0.92;
-                                if speed.abs() < 0.1 {
-                                    self.time = None;
-                                    self.speed = None;
-                                    self.start_touch = None;
-                                    return None;
-                                }
-                            }
-                            None => {
-                                let start_y = self.start_touch.unwrap_or((0.0, 0.0)).1;
-                                let end_y = self.scroll.unwrap_or((0.0, 0.0)).1;
-                                let y_traveled = end_y - start_y;
-                                let time_secs = time.as_secs_f32();
-                                self.speed = Some(-((y_traveled / time_secs) * 0.05));
-                            }
-                        }
-
-                        if let Some(speed) = self.speed {
-                            let state = (speed.abs() > 0.01).then_some(
-                                MouseState::Scroll(0.0, speed)
-                            );
-
-                            if let Some(s) = state {
-                                return Some(Box::new(MouseEvent { position: Some(self.mouse), state: s }) as Box<dyn Event>);
-                            }
-                        }
-                    }
-                }
-
-                None
-            }
-
-
             Input::Touch(Touch { location, phase, .. }) => {
                 let location = (location.x as f32, location.y as f32);
                 let position = (scale.logical(location.0), scale.logical(location.1));
                 let event = match phase {
                     TouchPhase::Started => {
-                        self.time = None;
-                        self.speed = None;
-                        self.hold = Some(Instant::now());
                         self.scroll = Some(position);
                         self.touching = true;
-                        self.start_touch = Some(position);
                         Some(MouseState::Pressed)
                     },
                     TouchPhase::Ended | TouchPhase::Cancelled => {
                         self.touching = false;
-                        self.time = self.hold.map(|h| h.elapsed());
-
-                        let hold = self.hold.map(|start| start.elapsed()).unwrap_or_default();
-                        match self.start_touch.map(|l| (position.1 - l.1).abs() < 25.0).unwrap_or(false) && hold < Duration::from_millis(600) {
-                            true => Some(MouseState::Released),
-                            false => Some(MouseState::ReleasedLong),
-                        }
+                        Some(MouseState::Released)
                     },
                     TouchPhase::Moved => {
                         self.scroll.and_then(|(prev_x, prev_y)| {

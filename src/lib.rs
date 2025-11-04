@@ -1,10 +1,10 @@
-#![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/pelican_ui_std/main/logo.png")]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/ramp-stack/roost_ui/master/logo.png")]
 
 //! roost is a fast, cross-platform UI renderer.
 //!
 //! Check out the [website](http://ramp-stack.com/roost) for more information, the [Quick Start Guide](http://ramp-stack.com/roost/getting_started) to set up your first app.
 
-extern crate self as roost;
+extern crate self as roost_ui;
 
 use std::collections::BTreeMap;
 use std::any::TypeId;
@@ -22,7 +22,12 @@ pub use maverick_os::{
 };
 
 pub use pelican_ui_proc::Component;
+
+pub extern crate include_dir;
+pub use include_dir::{Dir, File, DirEntry};
 pub use include_dir::include_dir;
+
+// pub use include_dir::include_dir as include_dir;
 
 mod wgpu;
 use wgpu::Canvas;
@@ -60,7 +65,6 @@ pub trait Plugin: Downcast {
 }
 impl_downcast!(Plugin);
 
-pub use include_dir::{Dir, DirEntry};
 pub use downcast_rs::{Downcast, impl_downcast};
 pub use maverick_os::{window::Window, RuntimeContext, HardwareContext};
 
