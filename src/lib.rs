@@ -229,8 +229,8 @@ impl AsMut<Atlas> for Context {fn as_mut(&mut self) -> &mut Atlas {&mut self.ass
 /// struct MyApp;
 ///
 /// impl Application for MyApp {
-///     async fn new(ctx: &mut Context) -> Box<dyn Drawable> {
-///         Box::new(MyRootDrawable::new())
+///     async fn new(ctx: &mut Context) -> impl Drawable {
+///         MyInterface::new(ctx)
 ///     }
 /// }
 /// ```

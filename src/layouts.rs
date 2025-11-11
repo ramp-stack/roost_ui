@@ -119,55 +119,58 @@ pub struct UniformExpand;
 impl UniformExpand {
     pub fn get(sizes: Vec<(f32, f32)>, max_size: f32, spacing: f32) -> Vec<f32> {
         // Calculate the total spacing and the minimum size required
-        let spacing = (sizes.len() - 1) as f32 * spacing;
-        let min_size = sizes.iter().fold(0.0, |s, i| s + i.0) + spacing;
+        if !sizes.is_empty() {
+            let spacing = (sizes.len() - 1) as f32 * spacing;
+            let min_size = sizes.iter().fold(0.0, |s, i| s + i.0) + spacing;
 
-        let mut sizes = sizes.into_iter().map(|s| (s.0, s.1)).collect::<Vec<_>>();
+            let mut sizes = sizes.into_iter().map(|s| (s.0, s.1)).collect::<Vec<_>>();
 
-        let mut free_space = (max_size - min_size).max(0.0);
-        while free_space > 0.0 {
-            let (min_exp, count, next) = sizes.iter().fold((None, 0.0, free_space), |(mut me, mut c, mut ne), size| {
-                let min = size.0;
-                let max = size.1;
-                if min < max { // Item can expand
-                    match me {
-                        Some(w) if w < min => {
-                            ne = ne.min(min - w); // Next size could be the min size of the next expandable block
-                        },
-                        Some(w) if w == min => {
-                            ne = ne.min(max - min); // Next size could be the max size of one of the smallest items
-                            c += 1.0;
-                        },
-                        Some(w) if w > min => {
-                            ne = ne.min(max - min).min(w - min); // Next size could be the max size of one of the smallest items
-                            me = Some(min);
-                            c = 1.0;
-                        },
-                        _ => {
-                            ne = ne.min(max - min); // Next size could be the max size of one of the smallest items
-                            me = Some(min);
-                            c = 1.0;
+            let mut free_space = (max_size - min_size).max(0.0);
+            while free_space > 0.0 {
+                let (min_exp, count, next) = sizes.iter().fold((None, 0.0, free_space), |(mut me, mut c, mut ne), size| {
+                    let min = size.0;
+                    let max = size.1;
+                    if min < max { // Item can expand
+                        match me {
+                            Some(w) if w < min => {
+                                ne = ne.min(min - w); // Next size could be the min size of the next expandable block
+                            },
+                            Some(w) if w == min => {
+                                ne = ne.min(max - min); // Next size could be the max size of one of the smallest items
+                                c += 1.0;
+                            },
+                            Some(w) if w > min => {
+                                ne = ne.min(max - min).min(w - min); // Next size could be the max size of one of the smallest items
+                                me = Some(min);
+                                c = 1.0;
+                            },
+                            _ => {
+                                ne = ne.min(max - min); // Next size could be the max size of one of the smallest items
+                                me = Some(min);
+                                c = 1.0;
+                            }
                         }
                     }
-                }
-                (me, c, ne)
-            });
+                    (me, c, ne)
+                });
 
-            if min_exp.is_none() { break; }
-            let min_exp = min_exp.unwrap();
+                if min_exp.is_none() { break; }
+                let min_exp = min_exp.unwrap();
 
-            let expand = (next * count).min(free_space); // Next size could be the rest of the free space
-            free_space -= expand;
-            let expand = expand / count;
+                let expand = (next * count).min(free_space); // Next size could be the rest of the free space
+                free_space -= expand;
+                let expand = expand / count;
 
-            sizes.iter_mut().for_each(|size| {
-                if size.0 < size.1 && size.0 == min_exp {
-                    size.0 += expand;
-                }
-            });
+                sizes.iter_mut().for_each(|size| {
+                    if size.0 < size.1 && size.0 == min_exp {
+                        size.0 += expand;
+                    }
+                });
+            }
+
+            return sizes.into_iter().map(|s| s.0).collect();
         }
-
-        sizes.into_iter().map(|s| s.0).collect()
+        vec![0.0]
     }
 }
 
@@ -264,13 +267,16 @@ impl Column {
 
 impl Layout for Column {
     fn request_size(&self, _ctx: &mut Context, children: Vec<SizeRequest>) -> SizeRequest {
-        let (widths, heights): (Vec<_>, Vec<_>) = children.into_iter().map(|i|
-            ((i.min_width(), i.max_width()), (i.min_height(), i.max_height()))
-        ).unzip();
-        let spacing = self.0*(heights.len()-1) as f32;
-        let width = self.2.get(widths, Size::max);
-        let height = Size::add(heights);
-        self.3.adjust_request(SizeRequest::new(width.0, height.0, width.1, height.1).add_height(spacing))
+        if !children.is_empty() {
+            let (widths, heights): (Vec<_>, Vec<_>) = children.into_iter().map(|i|
+                ((i.min_width(), i.max_width()), (i.min_height(), i.max_height()))
+            ).unzip();
+            let spacing = self.0*(heights.len()-1) as f32;
+            let width = self.2.get(widths, Size::max);
+            let height = Size::add(heights);
+            return self.3.adjust_request(SizeRequest::new(width.0, height.0, width.1, height.1).add_height(spacing));
+        }
+        SizeRequest::new(0.0, 0.0, 0.0, 0.0)
     }
 
     fn build(&self, _ctx: &mut Context, col_size: (f32, f32), children: Vec<SizeRequest>) -> Vec<Area> {
@@ -713,7 +719,7 @@ impl Component for Enum {
 impl Enum {
     /// Creates a new [`Enum`] component with the given drawable items.
     /// The first item will be visible by default.
-    pub fn new(items: Vec<(&str, Box<dyn Drawable>)>, start: &str) -> Self {
+    pub fn new(items: Vec<(String, Box<dyn Drawable>)>, start: String) -> Self {
         let items = items.into_iter().map(|(name, item)| {
             (name.to_string(), Opt::new(item, name == start))
         }).collect::<Vec<(String, Opt<Box<dyn Drawable>>)>>();

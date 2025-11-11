@@ -52,37 +52,6 @@ impl _Drawable for Box<dyn Drawable> {
     }
 }
 
-impl<D: _Drawable + Debug + Any> Drawable for D {
-    fn request_size(&self, ctx: &mut Context) -> SizeRequest {_Drawable::request_size(self, ctx).0}
-    fn name(&self) -> String {_Drawable::name(self)}
-
-    fn into_any(self: Box<Self>) -> Box<dyn Any> { self }
-    fn as_any(&self) -> &dyn Any { self }
-    fn as_any_mut(&mut self) -> &mut dyn Any { self }
-}
-
-pub(crate) trait _Drawable: Debug {
-    fn request_size(&self, ctx: &mut Context) -> RequestBranch;
-    fn build(&mut self, _ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {
-        SizedBranch(request.0.get(size), vec![])
-    }
-    fn draw(&mut self, sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)>;
-
-    fn name(&self) -> String {std::any::type_name_of_val(self).to_string()}
-
-    fn event(&mut self, _ctx: &mut Context, _sized: SizedBranch, _event: Box<dyn Event>) {}
-}
-
-impl _Drawable for Text {
-    fn request_size(&self, ctx: &mut Context) -> RequestBranch {
-        RequestBranch(SizeRequest::fixed(self.size(ctx)), vec![])
-    }
-
-    fn draw(&mut self, _sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
-        vec![(CanvasArea(offset, Some(bound)), CanvasItem::Text(self.clone()))]
-    }
-}
-
 impl<D: _Drawable + Debug + Any> _Drawable for Option<D> {
     fn request_size(&self, ctx: &mut Context) -> RequestBranch {
         match self {
@@ -119,6 +88,36 @@ impl<D: _Drawable + Debug + Any> _Drawable for Option<D> {
     }
 }
 
+impl<D: _Drawable + Debug + Any> Drawable for D {
+    fn request_size(&self, ctx: &mut Context) -> SizeRequest {_Drawable::request_size(self, ctx).0}
+    fn name(&self) -> String {_Drawable::name(self)}
+
+    fn into_any(self: Box<Self>) -> Box<dyn Any> { self }
+    fn as_any(&self) -> &dyn Any { self }
+    fn as_any_mut(&mut self) -> &mut dyn Any { self }
+}
+
+pub(crate) trait _Drawable: Debug {
+    fn request_size(&self, ctx: &mut Context) -> RequestBranch;
+    fn build(&mut self, _ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {
+        SizedBranch(request.0.get(size), vec![])
+    }
+    fn draw(&mut self, sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)>;
+
+    fn name(&self) -> String {std::any::type_name_of_val(self).to_string()}
+
+    fn event(&mut self, _ctx: &mut Context, _sized: SizedBranch, _event: Box<dyn Event>) {}
+}
+
+impl _Drawable for Text {
+    fn request_size(&self, ctx: &mut Context) -> RequestBranch {
+        RequestBranch(SizeRequest::fixed(self.size(ctx)), vec![])
+    }
+
+    fn draw(&mut self, _sized: SizedBranch, offset: Offset, bound: Rect) -> Vec<(CanvasArea, CanvasItem)> {
+        vec![(CanvasArea(offset, Some(bound)), CanvasItem::Text(self.clone()))]
+    }
+}
 
 /// A basic drawable shape with a fill color.
 #[derive(Clone, Copy, Debug)]
