@@ -63,7 +63,7 @@ impl<D: _Drawable + Debug + Any> _Drawable for Option<D> {
     fn build(&mut self, ctx: &mut Context, size: Size, request: RequestBranch) -> SizedBranch {
         match self {
             Some(d) => d.build(ctx, size, request),
-            None => SizedBranch(size, vec![]),
+            None => SizedBranch((0.0, 0.0), vec![]),
         }
     }
 

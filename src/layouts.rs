@@ -364,6 +364,10 @@ impl Wrap {
     pub fn new(w_spacing: f32, h_spacing: f32) -> Self {
         Wrap(w_spacing, h_spacing, Offset::Center, Offset::Center, Padding::default(), Arc::new(Mutex::new(0.0)))
     }
+
+    pub fn start(w_spacing: f32, h_spacing: f32) -> Self {
+        Wrap(w_spacing, h_spacing, Offset::Start, Offset::Center, Padding::default(), Arc::new(Mutex::new(0.0)))
+    }
 }
 impl Layout for Wrap {
     fn request_size(&self, _ctx: &mut Context, children: Vec<SizeRequest>) -> SizeRequest {

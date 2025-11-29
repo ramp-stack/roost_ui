@@ -118,7 +118,7 @@ impl Assets {
 
     /// Loads the contents of the specified file from the search directories, returning its bytes if found.
     pub fn load_file(&self, file: &str) -> Option<Vec<u8>> {
-        self.dirs.iter().find_map(|dir|
+        self.dirs.iter().rev().find_map(|dir|
             dir.find(file).ok().and_then(|mut f|
                 f.next().and_then(|f|
                     if let DirEntry::File(f) = f {

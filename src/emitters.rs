@@ -40,23 +40,44 @@ impl<D: Drawable + 'static> Component for Button<D> {
 impl<D: Drawable + 'static> OnEvent for Button<D> {
     fn on_event(&mut self, _ctx: &mut Context, event: Box<dyn Event>) -> Vec<Box<dyn Event>> { 
         if let Some(event) = event.downcast_ref::<MouseEvent>() {
-            return match event.state {
-                MouseState::Pressed if event.position.is_some() => 
-                    events![events::Button::Pressed(true)],
-                MouseState::Moved | MouseState::Scroll(..) => 
-                    events![events::Button::Hover(event.position.is_some())],
+            // return match event.state {
+            //     MouseState::Pressed if event.position.is_some() => 
+            //         events![events::Button::Pressed(true)],
+            //     MouseState::Moved | MouseState::Scroll(..) if !crate::IS_MOBILE => 
+            //         events![events::Button::Hover(event.position.is_some())],
+            //     MouseState::Released => {
+            //         match event.position.is_some() {
+            //             true if !crate::IS_MOBILE => events![events::Button::Hover(true)],
+            //             _ => events![events::Button::Pressed(false)],
+            //         } 
+            //     },
+            //     _ => Vec::new()
+            // };
+
+            match event.state {
+                MouseState::Pressed if event.position.is_some() => {
+                    return events![events::Button::Pressed(true)];
+                }
+                // MouseState::Pressed if event.position.is_none() && !crate::IS_MOBILE => self.2 = false,
+                MouseState::Moved | MouseState::Scroll(..) if !crate::IS_MOBILE => {
+                    return events![events::Button::Hover(event.position.is_some())];
+                }
                 MouseState::Released => {
-                    match !crate::IS_MOBILE && event.position.is_some() {
-                        true => events![events::Button::Hover(true)],
-                        false => events![events::Button::Pressed(false)],
+                    if !crate::IS_MOBILE && event.position.is_some() {
+                        // true => events.push(Box::new(events::TextInput::Hover(true))),
+                        return events![events::Button::Hover(true)];
+                    } else {
+                        return events![events::Button::Pressed(false)];
                     }
-                },
-                _ => Vec::new()
-            };
+                }
+                _ => {}
+            }
         }
         vec![event]
     }
 }
+
+
 
 /// The [`Selectable`] emitter allows one item in a group to be active at a time. 
 /// When pressed, it emits an event with its unique ID and group ID, 
@@ -196,21 +217,24 @@ impl<D: Drawable + 'static> OnEvent for TextInput<D> {
                     self.2 = true;
                     events.push(Box::new(events::TextInput::Focused(true)));
                 }
-                MouseState::Pressed if e.position.is_none() => self.2 = false,
-                MouseState::Moved | MouseState::Scroll(..) => {
+                MouseState::Pressed => {
+                    if e.position.is_none() && !crate::IS_MOBILE { 
+                        self.2 = false; 
+                        events.push(Box::new(events::TextInput::Focused(false)));
+                    }
+                },
+                MouseState::Moved | MouseState::Scroll(..) if !crate::IS_MOBILE && !self.2 => {
                     events.push(Box::new(events::TextInput::Hover(e.position.is_some())));
                 }
-                MouseState::Released => {
-                    match !crate::IS_MOBILE && e.position.is_some() {
-                        true => events.push(Box::new(events::TextInput::Hover(true))),
-                        false => events.push(Box::new(events::TextInput::Focused(false))),
-                    }
-                }
+                //     if !crate::IS_MOBILE && e.position.is_none() {
+                //         // true => events.push(Box::new(events::TextInput::Hover(true))),
+                //         events.push(Box::new(events::TextInput::Focused(false)));
+                //     }
+                // }
                 _ => {}
             }
 
             events.push(event);
-
             return events;
         } else if let Some(KeyboardEvent { state: KeyboardState::Pressed, key: _ }) = event.downcast_ref() {
             return if self.2 { vec![event] } else { Vec::new() };
@@ -227,6 +251,15 @@ impl<D: Drawable + 'static> Scrollable<D> {
     pub fn new(child: D) -> Self {
         Scrollable(Stack::default(), Momentum::new(child), (0.0, 0.0))
     }
+}
+
+impl<D: Drawable + 'static> std::ops::Deref for Scrollable<D> {
+    type Target = Momentum<D>;
+    fn deref(&self) -> &Self::Target {&self.1}
+}
+
+impl<D: Drawable + 'static> std::ops::DerefMut for Scrollable<D> {
+    fn deref_mut(&mut self) -> &mut Self::Target {&mut self.1}
 }
 
 impl<D: Drawable + 'static> Component for Scrollable<D> {
