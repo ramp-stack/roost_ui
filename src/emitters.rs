@@ -1,6 +1,6 @@
 use crate::events::{Event, TickEvent, MouseEvent, MouseState, KeyboardEvent, KeyboardState};
 use crate::{events, Drawable, Context, Component};
-use crate::events::OnEvent;
+use crate::events::{OnEvent, Key, NamedKey};
 use crate::layouts::Stack;
 use std::time::Duration;
 
@@ -77,7 +77,58 @@ impl<D: Drawable + 'static> OnEvent for Button<D> {
     }
 }
 
+#[derive(Debug)]
+pub struct NumericalInput<D: Drawable + 'static>(Stack, pub D);
 
+impl<D: Drawable + 'static> NumericalInput<D> {
+    pub fn new(child: D) -> Self {
+        NumericalInput(Stack::default(), child)
+    }
+}
+
+impl<D: Drawable + 'static> Component for NumericalInput<D> {
+    fn children_mut(&mut self) -> Vec<&mut dyn Drawable> {
+        vec![ &mut self.1 as &mut dyn crate::drawable::Drawable ]
+    }
+
+    fn children(&self) -> Vec<&dyn Drawable> {
+        vec![ &self.1 as &dyn crate::drawable::Drawable ]
+    }
+
+    fn request_size(&self, ctx: &mut Context, children: Vec<crate::layout::SizeRequest>) -> crate::layout::SizeRequest {
+        crate::layout::Layout::request_size(&self.0, ctx, children)
+    }
+
+    fn build(&mut self, ctx: &mut Context, size: (f32, f32), children: Vec<crate::layout::SizeRequest>) -> Vec<crate::layout::Area> {
+        crate::layout::Layout::build(&self.0, ctx, size, children)
+    }
+}
+
+impl<D: Drawable + 'static> OnEvent for NumericalInput<D> {
+    fn on_event(&mut self, _ctx: &mut Context, event: Box<dyn Event>) -> Vec<Box<dyn Event>> {
+        if let Some(KeyboardEvent { state: KeyboardState::Pressed, key }) = event.downcast_ref::<KeyboardEvent>() {
+
+            match key {
+                Key::Named(NamedKey::Delete) | Key::Named(NamedKey::Backspace) => {
+                    return events![events::NumericalInput::Delete];
+                }
+                Key::Character(c) => {
+                    if let Some(ch) = c.to_string().chars().next() {
+                        if ch.is_ascii_digit() { 
+                            return events![events::NumericalInput::Digit(ch)]
+                        }
+                        if matches!(ch, '.' | '/' | ':') { 
+                            return events![events::NumericalInput::Char(ch)]
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        vec![event]
+    }
+}
 
 /// The [`Selectable`] emitter allows one item in a group to be active at a time. 
 /// When pressed, it emits an event with its unique ID and group ID, 
@@ -117,7 +168,8 @@ impl<D: Drawable + 'static> OnEvent for Selectable<D> {
             ctx.trigger_event(events::Selectable::Pressed(self.2, self.3));
         } else if let Some(events::Selectable::Pressed(id, group_id)) = event.downcast_ref::<events::Selectable>() {
             if *group_id == self.3 {
-                return events![events::Selectable::Selected(*id == self.2)];
+                let is = *id == self.2;
+                return vec![Box::new(events::Selectable::Selected(is))]
             }
         }
         vec![event]

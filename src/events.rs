@@ -273,3 +273,15 @@ impl Event for TextInput {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum NumericalInput {
+    Delete,
+    Digit(char),
+    Char(char)
+}
+
+impl Event for NumericalInput {
+    fn pass(self: Box<Self>, _ctx: &mut Context, children: &Vec<((f32, f32),(f32,f32))>) -> Vec<Option<Box<dyn Event>>> {
+        children.iter().map(|_| Some(self.clone() as Box<dyn Event>)).collect()
+    }
+}

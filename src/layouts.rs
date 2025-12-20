@@ -700,7 +700,7 @@ impl<L: Drawable + 'static, R: Drawable + 'static> EitherOr<L, R> {
 
 /// A container that holds multiple drawables but displays only one at a time, allowing toggling between them.
 #[derive(Debug)]
-pub struct Enum(Stack, HashMap<String, Opt<Box<dyn Drawable>>>);
+pub struct Enum(Stack, HashMap<String, Opt<Box<dyn Drawable>>>, String);
 impl OnEvent for Enum {}
 
 impl Component for Enum {
@@ -728,7 +728,7 @@ impl Enum {
             (name.to_string(), Opt::new(item, name == start))
         }).collect::<Vec<(String, Opt<Box<dyn Drawable>>)>>();
 
-        Enum(Stack::default(), items.into_iter().collect())
+        Enum(Stack::default(), items.into_iter().collect(), start)
     }
 
     /// Displays only the item matching the given name and hides all others. 
@@ -739,9 +739,17 @@ impl Enum {
             false => self.1.keys().next().unwrap().clone()
         };
 
+        self.2 = key.to_string();
+
         for (k, v) in self.1.iter_mut() {
             v.display(*k == key);
         }
+    }
+
+    pub fn current(&self) -> String { self.2.to_string() }
+    
+    pub fn drawable(&mut self) -> &mut Opt<Box<dyn Drawable>> { 
+        self.1.get_mut(&self.2).unwrap() 
     }
 
 }
